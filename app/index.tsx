@@ -16,7 +16,15 @@ import { useRouter } from 'expo-router';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleAuthMode = (login: boolean) => {
+    setIsLogin(login);
+  };
 
   return (
     <View style={styles.container}>
@@ -28,64 +36,103 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent} 
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={styles.logoSection}>
-            <ThemedText type="headline" size={56} color={Colors.primary} style={styles.brandGlow}>FORMAH</ThemedText>
-            <ThemedText type="headline" size={20} style={styles.subtitle}>Welcome Back</ThemedText>
-            <ThemedText type="body" color={Colors.onSurfaceVariant} style={styles.description}>Log in to continue tracking your workouts and progress.</ThemedText>
+            <ThemedText type="headline" size={24} style={styles.subtitle}>
+              {isLogin ? 'Welcome Back' : 'Join Formah'}
+            </ThemedText>
+            <ThemedText type="body" color={Colors.onSurfaceVariant} style={styles.description}>
+              {isLogin 
+                ? 'Log in to continue tracking your workouts and progress.' 
+                : 'Create an account to start your fitness journey today.'}
+            </ThemedText>
           </View>
 
           <View style={styles.authCard}>
             <View style={styles.toggleContainer}>
               <TouchableOpacity 
-                onPress={() => setIsLogin(true)}
-                style={[styles.toggleBtn, isLogin && styles.toggleBtnActive]}
-              >
-                <ThemedText type="headline" size={12} color={isLogin ? Colors.primary : Colors.onSurfaceVariant} style={styles.trackingWidest}>LOG IN</ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                onPress={() => setIsLogin(false)}
+                onPress={() => toggleAuthMode(false)}
                 style={[styles.toggleBtn, !isLogin && styles.toggleBtnActive]}
               >
                 <ThemedText type="headline" size={12} color={!isLogin ? Colors.primary : Colors.onSurfaceVariant} style={styles.trackingWidest}>SIGN UP</ThemedText>
               </TouchableOpacity>
+              <TouchableOpacity 
+                onPress={() => toggleAuthMode(true)}
+                style={[styles.toggleBtn, isLogin && styles.toggleBtnActive]}
+              >
+                <ThemedText type="headline" size={12} color={isLogin ? Colors.primary : Colors.onSurfaceVariant} style={styles.trackingWidest}>LOG IN</ThemedText>
+              </TouchableOpacity>
             </View>
 
             <View style={styles.form}>
+              {!isLogin && (
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputWrapper}>
+                    <MaterialCommunityIcons name="account-outline" size={20} color={Colors.outline} />
+                    <TextInput 
+                      placeholder="Full Name"
+                      placeholderTextColor={Colors.outlineVariant}
+                      style={styles.input}
+                      value={name}
+                      onChangeText={setName}
+                    />
+                  </View>
+                </View>
+              )}
+
               <View style={styles.inputGroup}>
-                <ThemedText type="label" size={10} color={Colors.onSurfaceVariant} style={styles.inputLabel}>EMAIL ADDRESS</ThemedText>
                 <View style={styles.inputWrapper}>
                   <MaterialCommunityIcons name="email-outline" size={20} color={Colors.outline} />
                   <TextInput 
-                    placeholder="john@athlete.com"
+                    placeholder="Email Address"
                     placeholderTextColor={Colors.outlineVariant}
                     style={styles.input}
                     keyboardType="email-address"
                     autoCapitalize="none"
+                    value={email}
+                    onChangeText={setEmail}
                   />
                 </View>
               </View>
 
               <View style={styles.inputGroup}>
-                <ThemedText type="label" size={10} color={Colors.onSurfaceVariant} style={styles.inputLabel}>SECURE PASSWORD</ThemedText>
                 <View style={styles.inputWrapper}>
                   <MaterialCommunityIcons name="lock-outline" size={20} color={Colors.outline} />
                   <TextInput 
-                    placeholder="••••••••••••"
+                    placeholder="Password"
                     placeholderTextColor={Colors.outlineVariant}
                     style={styles.input}
-                    secureTextEntry
+                    secureTextEntry={!showPassword}
+                    value={password}
+                    onChangeText={setPassword}
                   />
-                  <MaterialCommunityIcons name="eye-outline" size={20} color={Colors.outline} />
+                  <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                    <MaterialCommunityIcons 
+                      name={showPassword ? "eye-off-outline" : "eye-outline"} 
+                      size={20} 
+                      color={showPassword ? Colors.primary : Colors.outline} 
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
 
-              <TouchableOpacity style={styles.forgotPass}>
-                <ThemedText type="headline" size={10} color={Colors.primary} style={[styles.trackingWidest, { opacity: 0.7 }]}>FORGOT PASSWORD?</ThemedText>
-              </TouchableOpacity>
+              {isLogin && (
+                <TouchableOpacity 
+                  style={styles.forgotPass}
+                  onPress={() => router.push('/forgot-password')}
+                >
+                  <ThemedText type="headline" size={10} color={Colors.primary} style={[styles.trackingWidest, { opacity: 0.7 }]}>FORGOT PASSWORD?</ThemedText>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity style={styles.primaryBtn} onPress={() => router.push('/home')}>
-                <ThemedText type="headline" size={14} color={Colors.onPrimary} style={styles.trackingWide}>LOGIN</ThemedText>
+                <ThemedText type="headline" size={14} color={Colors.onPrimary} style={styles.trackingWide}>
+                  {isLogin ? 'LOGIN' : 'CREATE ACCOUNT'}
+                </ThemedText>
               </TouchableOpacity>
             </View>
 
@@ -117,13 +164,14 @@ const styles = StyleSheet.create({
   },
   flex: { flex: 1 },
   scrollContent: {
-    paddingVertical: 60,
+    paddingTop: 40,
+    paddingBottom: 60,
     paddingHorizontal: 24,
     alignItems: 'center',
   },
   logoSection: {
     alignItems: 'center',
-    marginBottom: 40,
+    marginBottom: 24,
   },
   brandGlow: {
     fontStyle: 'italic',
@@ -181,10 +229,6 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     gap: 8,
-  },
-  inputLabel: {
-    marginLeft: 16,
-    letterSpacing: 1.5,
   },
   inputWrapper: {
     flexDirection: 'row',

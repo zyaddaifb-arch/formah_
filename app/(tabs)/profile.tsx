@@ -1,58 +1,116 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   StyleSheet, 
   ScrollView, 
   TouchableOpacity, 
   Image,
-  Dimensions
+  Dimensions,
+  TextInput,
+  Alert
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/Colors';
 import { ThemedText } from '../../components/ThemedText';
 import { GridBackground } from '../../components/VisualAccents';
 import { LinearGradient } from 'expo-linear-gradient';
+import { useWorkoutStore } from '../../store/workoutStore';
 
 const { width } = Dimensions.get('window');
 
-import { useWorkoutStore } from '../../store/workoutStore';
-
 export default function ProfileScreen() {
-  const history = useWorkoutStore(state => state.history);
+  const { user, history, updateUser, setWeightUnit } = useWorkoutStore();
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState(user.name);
 
   const calculateStreak = () => {
     if (history.length === 0) return 0;
-    return history.length; // Basic placeholder for streak logic
+    // Simple logic for now
+    return history.length;
   };
 
   const totalWorkouts = history.length;
   const streakDays = calculateStreak();
+
+  const handlePickImage = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission Required", "You need to allow access to your photos to change your profile picture.");
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+
+    if (!result.canceled) {
+      updateUser({ avatarUri: result.assets[0].uri });
+    }
+  };
+
+  const handleSaveName = () => {
+    if (nameInput.trim()) {
+      updateUser({ name: nameInput.trim() });
+    } else {
+      setNameInput(user.name);
+    }
+    setIsEditingName(false);
+  };
+
   return (
     <View style={styles.container}>
       <GridBackground />
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.profileSection, { marginTop: 40 }]}>
-          <View style={styles.avatarWrapper}>
-            <LinearGradient
-              colors={[Colors.primary, Colors.tertiary]}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={styles.avatarGradient}
-            >
-              <View style={styles.avatarInner}>
-                <Image 
-                  source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA65x1B46BlaVa4ghsbmBBfGrUQMOUG7vKPRrY_5slYLqnK2QmE3oV_deeikbtCIoqEq5lJuTKkb3G_vCH-1y4_9RrUQbYs6kIcIn0aBZgyzH2HmOTQWZwE-uLmD03hkTFmg4_tb-uWW_AdWgLNBJoNBpB5ewJKot9IxcAs60S-Rcj3wYBapp7C871PcRylF1fxCWamM3xy5LJms24hqcyIavYmS96N8q3VPGSuq02y5thWkb1YSDx_KG7MRismNMizPMDjqIv4qiiq' }} 
-                  style={styles.avatar} 
-                />
+          <TouchableOpacity onPress={handlePickImage} activeOpacity={0.8}>
+            <View style={styles.avatarWrapper}>
+              <LinearGradient
+                colors={[Colors.primary, Colors.tertiary]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.avatarGradient}
+              >
+                <View style={styles.avatarInner}>
+                  {user.avatarUri ? (
+                    <Image source={{ uri: user.avatarUri }} style={styles.avatar} />
+                  ) : (
+                    <View style={styles.avatarPlaceholder}>
+                      <MaterialCommunityIcons name="account" size={60} color={Colors.outline} />
+                    </View>
+                  )}
+                </View>
+              </LinearGradient>
+              <View style={styles.editBadge}>
+                <MaterialCommunityIcons name="camera" size={14} color={Colors.onPrimaryFixed} />
               </View>
-            </LinearGradient>
-            <View style={styles.lvlBadge}>
-              <ThemedText type="headline" size={10} color={Colors.onPrimaryFixed}>LVL 42</ThemedText>
             </View>
-          </View>
+          </TouchableOpacity>
 
-          <ThemedText type="headline" size={32} style={styles.userName}>Alex Thorne</ThemedText>
-          <ThemedText type="body" size={12} color={Colors.onSurfaceVariant} style={styles.userTier}>ELITE PERFORMANCE TIER</ThemedText>
+          <View style={styles.nameContainer}>
+            {isEditingName ? (
+              <TextInput
+                style={styles.nameInput}
+                value={nameInput}
+                onChangeText={setNameInput}
+                onBlur={handleSaveName}
+                onSubmitEditing={handleSaveName}
+                autoFocus
+                maxLength={20}
+                placeholderTextColor={Colors.onSurfaceVariant}
+              />
+            ) : (
+              <TouchableOpacity onPress={() => setIsEditingName(true)} style={styles.nameTouch}>
+                <ThemedText type="headline" size={32} style={styles.userName}>{user.name}</ThemedText>
+                <MaterialCommunityIcons name="pencil" size={16} color={Colors.primary} style={{ marginLeft: 8, opacity: 0.5 }} />
+              </TouchableOpacity>
+            )}
+          </View>
+          <ThemedText type="body" size={12} color={Colors.onSurfaceVariant} style={styles.userTier}>PREMIUM ATHLETE</ThemedText>
         </View>
 
         <View style={styles.statsRow}>
@@ -69,15 +127,21 @@ export default function ProfileScreen() {
           <SettingGroup title="PREFERENCES">
             <View style={styles.settingItemRow}>
               <View style={styles.settingItemLeft}>
-                <MaterialCommunityIcons name="ruler" size={24} color={Colors.primary} style={{ opacity: 0.6 }} />
-                <ThemedText type="body">Units</ThemedText>
+                <MaterialCommunityIcons name="weight-lifter" size={24} color={Colors.primary} style={{ opacity: 0.6 }} />
+                <ThemedText type="body">Weight Units</ThemedText>
               </View>
               <View style={styles.unitsToggle}>
-                <TouchableOpacity style={[styles.unitBtn, styles.unitBtnActive]}>
-                  <ThemedText type="headline" size={10} color={Colors.onPrimaryFixed}>METRIC</ThemedText>
+                <TouchableOpacity 
+                  style={[styles.unitBtn, user.weightUnit === 'kg' && styles.unitBtnActive]}
+                  onPress={() => setWeightUnit('kg')}
+                >
+                  <ThemedText type="headline" size={10} color={user.weightUnit === 'kg' ? Colors.onPrimaryFixed : Colors.onSurfaceVariant}>KG</ThemedText>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.unitBtn}>
-                  <ThemedText type="headline" size={10} color={Colors.onSurfaceVariant}>IMP</ThemedText>
+                <TouchableOpacity 
+                  style={[styles.unitBtn, user.weightUnit === 'lb' && styles.unitBtnActive]}
+                  onPress={() => setWeightUnit('lb')}
+                >
+                  <ThemedText type="headline" size={10} color={user.weightUnit === 'lb' ? Colors.onPrimaryFixed : Colors.onSurfaceVariant}>LB</ThemedText>
                 </TouchableOpacity>
               </View>
             </View>
@@ -105,8 +169,6 @@ export default function ProfileScreen() {
     </View>
   );
 }
-
-
 
 const StatBox = ({ label, value, color }: { label: string, value: string, color: string }) => (
   <View style={styles.statBox}>
@@ -137,17 +199,17 @@ const SettingItem = ({ icon, label }: { icon: string, label: string }) => (
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   scrollContent: { paddingHorizontal: 24, paddingVertical: 16 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', height: 64, marginBottom: 40 },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  miniAvatarBorder: { width: 32, height: 32, borderRadius: 16, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(129, 236, 255, 0.2)' },
-  brandTitle: { fontStyle: 'italic', fontWeight: '900', letterSpacing: 1.5 },
   profileSection: { alignItems: 'center', marginBottom: 40 },
   avatarWrapper: { marginBottom: 24, alignItems: 'center', justifyContent: 'center' },
   avatarGradient: { width: 132, height: 132, borderRadius: 66, padding: 4, shadowColor: Colors.primary, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 30 },
   avatarInner: { width: '100%', height: '100%', borderRadius: 62, overflow: 'hidden', borderWidth: 4, borderColor: Colors.background },
   avatar: { width: '100%', height: '100%' },
-  lvlBadge: { position: 'absolute', bottom: 4, right: 4, backgroundColor: Colors.primary, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  userName: { fontWeight: 'bold' },
+  avatarPlaceholder: { flex: 1, backgroundColor: Colors.surfaceContainerHighest, alignItems: 'center', justifyContent: 'center' },
+  editBadge: { position: 'absolute', bottom: 4, right: 4, backgroundColor: Colors.primary, width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 3, borderColor: Colors.background },
+  nameContainer: { minHeight: 48, justifyContent: 'center', alignItems: 'center' },
+  nameTouch: { flexDirection: 'row', alignItems: 'center' },
+  userName: { fontWeight: 'bold', color: Colors.onSurface },
+  nameInput: { fontSize: 32, fontWeight: 'bold', color: Colors.primary, textAlign: 'center', borderBottomWidth: 1, borderBottomColor: Colors.primary, paddingBottom: 4, minWidth: 200 },
   userTier: { marginTop: 4, letterSpacing: 1 },
   statsRow: { flexDirection: 'row', gap: 16, marginBottom: 40 },
   statBox: { flex: 1, backgroundColor: Colors.surfaceContainerHigh, borderRadius: 16, padding: 24, alignItems: 'center', gap: 8 },

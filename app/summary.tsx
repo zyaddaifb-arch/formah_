@@ -81,7 +81,7 @@ export default function SummaryScreen() {
             <StatCard 
               icon="weight-lifter" 
               label="VOLUME" 
-              value={`${session.totalVolume} kg`} 
+              value={`${session.totalVolume} ${useWorkoutStore.getState().user.weightUnit}`} 
               color={Colors.secondary} 
             />
             <StatCard 

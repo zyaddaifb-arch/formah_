@@ -69,12 +69,28 @@ interface ExerciseDetailsModalProps {
   onClose: () => void;
 }
 
+import { useWorkoutStore } from '@/store/workoutStore';
+
 export function ExerciseDetailsModal({ visible, exerciseName, onClose }: ExerciseDetailsModalProps) {
-  const [activeTab, setActiveTab] = useState<'About' | 'History' | 'Records'>('About');
+  const [activeTab, setActiveTab] = useState<'Instructions' | 'History' | 'Bests'>('Instructions');
+  const globalUnit = useWorkoutStore(state => state.user.weightUnit);
   
   if (!exerciseName) return null;
   
-  const data = EXERCISE_DETAILS_DATA[exerciseName] || DEFAULT_DETAILS;
+  const rawData = EXERCISE_DETAILS_DATA[exerciseName] || DEFAULT_DETAILS;
+
+  // Process data to replace 'kg' with global unit
+  const data = {
+    ...rawData,
+    records: rawData.records.map(r => ({
+      ...r,
+      value: r.value.replace(/\bkg\b/gi, globalUnit.toUpperCase())
+    })),
+    history: rawData.history.map(h => ({
+      ...h,
+      summary: h.summary.replace(/\bkg\b/gi, globalUnit.toUpperCase())
+    }))
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
@@ -101,7 +117,7 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
 
           {/* Custom Tab Bar */}
           <View style={styles.tabBar}>
-            {(['About', 'History', 'Records'] as const).map((tab) => (
+            {(['Instructions', 'History', 'Bests'] as const).map((tab) => (
               <TouchableOpacity 
                 key={tab} 
                 style={[styles.tabItem, activeTab === tab && styles.tabItemActive]}
@@ -119,7 +135,7 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
           </View>
 
           <ScrollView style={styles.contentScroll} showsVerticalScrollIndicator={false}>
-            {activeTab === 'About' && (
+            {activeTab === 'Instructions' && (
               <View style={styles.tabContent}>
                 {/* Illustration Placeholder */}
                 <View style={styles.illustrationContainer}>
@@ -164,7 +180,7 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
               </View>
             )}
 
-            {activeTab === 'Records' && (
+            {activeTab === 'Bests' && (
               <View style={styles.tabContent}>
                  <ThemedText type="headline" size={18} style={styles.sectionTitle}>Bests & Records</ThemedText>
                  <View style={styles.recordsGrid}>

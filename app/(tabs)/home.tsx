@@ -23,6 +23,7 @@ export default function HomeScreen() {
   const templates = useWorkoutStore(state => state.templates);
   const startWorkout = useWorkoutStore(state => state.startWorkout);
   const history = useWorkoutStore(state => state.history);
+  const user = useWorkoutStore(state => state.user);
 
   const calculateStreak = () => {
     // Basic streak calculation, assuming sorted by start Time descending
@@ -71,7 +72,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.greetingSection}>
           <ThemedText type="label" size={12} color={Colors.primary} style={styles.trackingWidest}>WELCOME BACK</ThemedText>
-          <ThemedText type="headline" size={36} color={Colors.onSurface} style={styles.greetingTitle}>Alex Protocol</ThemedText>
+          <ThemedText type="headline" size={36} color={Colors.onSurface} style={styles.greetingTitle}>{user.name}</ThemedText>
         </View>
 
         <TouchableOpacity 
@@ -102,7 +103,7 @@ export default function HomeScreen() {
                 </View>
               ))}
             </View>
-            <ThemedText type="body" size={11} color={Colors.onSurfaceVariant}>Keep it up, Alex.</ThemedText>
+            <ThemedText type="body" size={11} color={Colors.onSurfaceVariant}>Keep it up, {user.name.split(' ')[0]}.</ThemedText>
           </View>
         </View>
 
@@ -183,7 +184,7 @@ const ExampleRow = ({ title, meta, onPress }: { title: string, meta: string, onP
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
-  scrollContent: { paddingHorizontal: 24, paddingTop: 16, paddingBottom: 120 },
+  scrollContent: { paddingHorizontal: 24, paddingTop: 60, paddingBottom: 120 },
   header: {
     height: 64,
     flexDirection: 'row',
