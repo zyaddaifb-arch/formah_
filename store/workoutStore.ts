@@ -8,6 +8,7 @@ export type SetData = {
   reps: number;
   done: boolean;
   isWarmUp?: boolean;
+  note?: string;
 };
 
 export type ExerciseNote = {
@@ -20,6 +21,7 @@ export type ExerciseNote = {
 
 export type Exercise = {
   id: string;
+  exerciseId?: string;
   name: string;
   sets: SetData[];
   weightUnit?: 'kg' | 'lb';
@@ -42,6 +44,7 @@ export type ActiveWorkout = {
   id: string;
   startTime: number;
   templateId?: string;
+  workoutTitle: string;
   exercises: Exercise[];
   
   // Rest Timer State
@@ -69,12 +72,16 @@ export interface WorkoutStore {
   startWorkout: (templateId?: string) => void;
   finishWorkout: () => string | null;
   cancelWorkout: () => void;
-  addExerciseToActive: (exerciseName: string) => void;
+  addExerciseToActive: (exerciseId: string, exerciseName: string) => void;
   removeExerciseFromActive: (exerciseId: string) => void;
-  replaceExerciseInActive: (exerciseId: string, newExerciseName: string) => void;
+  replaceExerciseInActive: (exerciseId: string, newExerciseId: string, newExerciseName: string) => void;
   addSetToExercise: (exerciseId: string, isWarmUp?: boolean) => void;
+  removeSetFromExercise: (exerciseId: string, setId: string) => void;
+  duplicateSet: (exerciseId: string, setId: string) => void;
   updateSet: (exerciseId: string, setId: string, data: Partial<SetData>) => void;
   toggleSetDone: (exerciseId: string, setId: string) => void;
+  markAllValidSetsDone: () => void;
+  setExercisesOrderInActive: (newExercises: Exercise[]) => void;
   
   // Exercise Feature Actions
   addExerciseNote: (exerciseId: string, isSticky: boolean) => void;
@@ -83,6 +90,9 @@ export interface WorkoutStore {
   toggleWarmUpSets: (exerciseId: string) => void;
   updateExerciseWeightUnit: (exerciseId: string, unit: 'kg' | 'lb') => void;
   updateExerciseRestTimer: (exerciseId: string, seconds: number) => void;
+
+  // Workout Title
+  renameWorkout: (title: string) => void;
 
   // Rest Timer Actions
   startRestTimer: (exerciseId?: string, forceSeconds?: number) => void;
@@ -141,12 +151,28 @@ export const useWorkoutStore = create<WorkoutStore>()(
       startWorkout: (templateId?: string) => {
         const { templates } = get();
         let initialExercises: Exercise[] = [];
-        
+        let workoutTitle = '';
+
         if (templateId) {
           const template = templates.find((t) => t.id === templateId);
           if (template) {
             // Deep copy to prevent mutating template
             initialExercises = JSON.parse(JSON.stringify(template.exercises));
+            workoutTitle = template.title;
+          }
+        }
+
+        // Auto-generate time-based title for quick/empty startups
+        if (!workoutTitle) {
+          const hour = new Date().getHours();
+          if (hour >= 5 && hour < 12) {
+            workoutTitle = 'Morning Workout';
+          } else if (hour >= 12 && hour < 17) {
+            workoutTitle = 'Midday Workout';
+          } else if (hour >= 17 && hour < 21) {
+            workoutTitle = 'Evening Workout';
+          } else {
+            workoutTitle = 'Night Workout';
           }
         }
 
@@ -155,6 +181,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
             id: Date.now().toString(),
             startTime: Date.now(),
             templateId,
+            workoutTitle,
             exercises: initialExercises,
             restTimerRemaining: 0,
             restTimerTarget: 60,
@@ -177,12 +204,8 @@ export const useWorkoutStore = create<WorkoutStore>()(
           });
         });
 
-        // Determine title
-        let title = 'Freestyle Workout';
-        if (activeWorkout.templateId) {
-          const t = templates.find((x) => x.id === activeWorkout.templateId);
-          if (t) title = t.title;
-        }
+        // Determine title (use stored workoutTitle, fallback to template or default)
+        let title = activeWorkout.workoutTitle || 'Freestyle Workout';
 
         const newSession: WorkoutSession = {
           id: activeWorkout.id,
@@ -206,20 +229,51 @@ export const useWorkoutStore = create<WorkoutStore>()(
         set({ activeWorkout: null });
       },
 
-      addExerciseToActive: (exerciseName: string) => {
+      renameWorkout: (title: string) => {
         const { activeWorkout } = get();
+        if (!activeWorkout) return;
+        set({ activeWorkout: { ...activeWorkout, workoutTitle: title } });
+      },
+
+      addExerciseToActive: (exerciseId: string, exerciseName: string) => {
+        const { activeWorkout, history } = get();
         if (!activeWorkout) return;
 
         const uniqueId = Math.random().toString(36).substring(7) + '_' + Date.now().toString();
+        
+        // Find previous sets from history using exerciseId (backwards search for latest)
+        let initialSets: SetData[] = [];
+        for (let i = 0; i < history.length; i++) {
+          const workout = history[i];
+          const previousExercise = workout.exercises.find(ex => ex.exerciseId === exerciseId);
+          if (previousExercise && previousExercise.sets.length > 0) {
+            // Found the most recent session with this exercise. Clone its layout.
+            initialSets = previousExercise.sets.map((set, index) => ({
+              id: uniqueId + '_' + (index + 1),
+              weight: 0,
+              reps: 0,
+              done: false,
+              isWarmUp: set.isWarmUp,
+            }));
+            break;
+          }
+        }
+
+        // Fallback to single set if no history exists
+        if (initialSets.length === 0) {
+          initialSets = [
+            { id: uniqueId + '_1', weight: 0, reps: 0, done: false }
+          ];
+        }
+
         const newExercise: Exercise = {
           id: uniqueId,
+          exerciseId,
           name: exerciseName,
-          sets: [
-            { id: uniqueId + '_1', weight: 0, reps: 0, done: false }
-          ],
+          sets: initialSets,
           weightUnit: 'kg',
           notes: [],
-          warmUpSetsEnabled: false,
+          warmUpSetsEnabled: initialSets.some(s => s.isWarmUp),
         };
 
         set({
@@ -280,6 +334,57 @@ export const useWorkoutStore = create<WorkoutStore>()(
         });
       },
 
+      removeSetFromExercise: (exerciseId: string, setId: string) => {
+        const { activeWorkout } = get();
+        if (!activeWorkout) return;
+
+        const updatedExercises = activeWorkout.exercises.map((ex) => {
+          if (ex.id === exerciseId) {
+            return {
+              ...ex,
+              sets: ex.sets.filter((s) => s.id !== setId),
+            };
+          }
+          return ex;
+        }).filter(ex => ex.sets.length > 0);
+
+        set({
+          activeWorkout: { ...activeWorkout, exercises: updatedExercises },
+        });
+      },
+
+      duplicateSet: (exerciseId: string, setId: string) => {
+        const { activeWorkout } = get();
+        if (!activeWorkout) return;
+
+        const updatedExercises = activeWorkout.exercises.map((ex) => {
+          if (ex.id === exerciseId) {
+            const setIndex = ex.sets.findIndex(s => s.id === setId);
+            if (setIndex === -1) return ex;
+            const originalSet = ex.sets[setIndex];
+            
+            const duplicatedSet = {
+              ...originalSet,
+              id: Date.now().toString() + '_' + Math.random().toString(36).substring(2, 7),
+              done: false, // Duplicated sets should start unchecked
+            };
+
+            const newSets = [...ex.sets];
+            newSets.splice(setIndex + 1, 0, duplicatedSet);
+
+            return {
+              ...ex,
+              sets: newSets,
+            };
+          }
+          return ex;
+        });
+
+        set({
+          activeWorkout: { ...activeWorkout, exercises: updatedExercises },
+        });
+      },
+
       updateSet: (exerciseId: string, setId: string, data: Partial<SetData>) => {
         const { activeWorkout } = get();
         if (!activeWorkout) return;
@@ -317,6 +422,27 @@ export const useWorkoutStore = create<WorkoutStore>()(
           activeWorkout: { ...activeWorkout, exercises: updatedExercises },
         });
       },
+      
+      markAllValidSetsDone: () => {
+        const { activeWorkout } = get();
+        if (!activeWorkout) return;
+        
+        const updatedExercises = activeWorkout.exercises.map((ex) => {
+          return {
+            ...ex,
+            sets: ex.sets.map((s) => {
+              if (!s.done && s.weight > 0 && s.reps > 0) {
+                return { ...s, done: true };
+              }
+              return s;
+            })
+          };
+        });
+        
+        set({
+          activeWorkout: { ...activeWorkout, exercises: updatedExercises }
+        });
+      },
 
       removeExerciseFromActive: (exerciseId: string) => {
         const { activeWorkout } = get();
@@ -329,9 +455,34 @@ export const useWorkoutStore = create<WorkoutStore>()(
         });
       },
 
-      replaceExerciseInActive: (exerciseId: string, newExerciseName: string) => {
-        const { activeWorkout } = get();
+      replaceExerciseInActive: (exerciseId: string, newExerciseId: string, newExerciseName: string) => {
+        const { activeWorkout, history } = get();
         if (!activeWorkout) return;
+        
+        let initialSets: SetData[] = [];
+        const uniqueId = Math.random().toString(36).substring(7) + '_' + Date.now().toString();
+        
+        for (let i = 0; i < history.length; i++) {
+          const workout = history[i];
+          const previousExercise = workout.exercises.find(ex => ex.exerciseId === newExerciseId);
+          if (previousExercise && previousExercise.sets.length > 0) {
+            initialSets = previousExercise.sets.map((set, index) => ({
+              id: uniqueId + '_' + (index + 1),
+              weight: 0,
+              reps: 0,
+              done: false,
+              isWarmUp: set.isWarmUp,
+            }));
+            break;
+          }
+        }
+
+        if (initialSets.length === 0) {
+          initialSets = [
+            { id: uniqueId + '_1', weight: 0, reps: 0, done: false }
+          ];
+        }
+
         set({
           activeWorkout: {
             ...activeWorkout,
@@ -339,17 +490,27 @@ export const useWorkoutStore = create<WorkoutStore>()(
               if (ex.id === exerciseId) {
                 return {
                   id: ex.id,
+                  exerciseId: newExerciseId,
                   name: newExerciseName,
-                  sets: [
-                    { id: ex.id + '_' + Date.now().toString(), weight: 0, reps: 0, done: false }
-                  ],
+                  sets: initialSets,
                   weightUnit: 'kg',
                   notes: [],
-                  warmUpSetsEnabled: false,
+                  warmUpSetsEnabled: initialSets.some(s => s.isWarmUp),
                 } as Exercise;
               }
               return ex;
             })
+          }
+        });
+      },
+
+      setExercisesOrderInActive: (newExercises: Exercise[]) => {
+        const { activeWorkout } = get();
+        if (!activeWorkout) return;
+        set({
+          activeWorkout: {
+            ...activeWorkout,
+            exercises: newExercises
           }
         });
       },
@@ -443,7 +604,18 @@ export const useWorkoutStore = create<WorkoutStore>()(
             ...activeWorkout,
             exercises: activeWorkout.exercises.map(ex => {
               if (ex.id === exerciseId) {
-                return { ...ex, weightUnit: unit };
+                const oldUnit = ex.weightUnit || 'kg';
+                if (oldUnit === unit) return ex;
+
+                const isKgToLb = oldUnit === 'kg' && unit === 'lb';
+                const conversionFactor = isKgToLb ? 2.20462 : 0.453592;
+
+                const convertedSets = ex.sets.map(s => ({
+                  ...s,
+                  weight: s.weight > 0 ? parseFloat((s.weight * conversionFactor).toFixed(1)) : s.weight
+                }));
+
+                return { ...ex, weightUnit: unit, sets: convertedSets };
               }
               return ex;
             })

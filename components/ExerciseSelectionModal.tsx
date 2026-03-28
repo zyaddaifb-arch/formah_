@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   View, 
   StyleSheet, 
@@ -27,7 +27,6 @@ export type LibraryExercise = {
   lastPerformed?: string;
 };
 
-// Mock extended library for UI testing based on image
 const INITIAL_LIBRARY: LibraryExercise[] = [
   { id: '1', name: 'Ab Wheel', category: 'Reps Only', bodyPart: 'Core', frequency: 12, lastPerformed: '2025-09-01' },
   { id: '2', name: 'Aerobics', category: 'Cardio', bodyPart: 'Full Body', frequency: 34, lastPerformed: '2025-10-15' },
@@ -48,10 +47,11 @@ const INITIAL_LIBRARY: LibraryExercise[] = [
 export interface ExerciseSelectionModalProps {
   visible: boolean;
   onClose: () => void;
-  onAddExercises: (exercises: string[]) => void;
+  onAddExercises: (exercises: { id: string, name: string }[]) => void;
+  existingExerciseNames?: string[];
 }
 
-export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: ExerciseSelectionModalProps) {
+export function ExerciseSelectionModal({ visible, onClose, onAddExercises, existingExerciseNames = [] }: ExerciseSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [library, setLibrary] = useState<LibraryExercise[]>(INITIAL_LIBRARY);
@@ -69,6 +69,14 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
   const [customCategoryPickerVisible, setCustomCategoryPickerVisible] = useState(false);
   const [selectedDetailName, setSelectedDetailName] = useState<string | null>(null);
 
+  // Reset state when modal opens
+  useEffect(() => {
+    if (visible) {
+      setSearchQuery('');
+      setSelectedIds(new Set());
+    }
+  }, [visible]);
+
   const BODY_PARTS = ['All', 'Arms', 'Back', 'Cardio', 'Chest', 'Core', 'Full Body', 'Legs', 'Olympic', 'Other', 'Shoulders'];
   const CATEGORIES = ['All', 'Barbell', 'Dumbbell', 'Machine', 'Weighted Bodyweight', 'Reps Only', 'Cardio', 'Duration'];
   const SORTS = ['Name', 'Frequency', 'Last Performed'];
@@ -84,23 +92,18 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
   };
 
   const handleAdd = () => {
-    // Map selected IDs back to standard names (or ids)
-    // The previous implementation used strings. We'll pass names.
-    const selectedNames = Array.from(selectedIds).map(id => {
-      return library.find(ex => ex.id === id)?.name || '';
-    }).filter(n => n.length > 0);
+    const selectedExercises = Array.from(selectedIds).map(id => {
+      const ex = library.find(l => l.id === id);
+      return ex ? { id: ex.id, name: ex.name } : null;
+    }).filter((ex): ex is { id: string, name: string } => ex !== null);
     
-    onAddExercises(selectedNames);
-    
-    // reset selection over close
-    setSelectedIds(newSet => { newSet.clear(); return newSet; });
+    onAddExercises(selectedExercises);
+    setSelectedIds(new Set());
   };
 
   const handleNewExercise = () => {
     Keyboard.dismiss();
     setCustomName(searchQuery);
-    
-    // Give keyboard a tiny tick to dismiss before animating the modal
     setTimeout(() => {
       setCreateModalVisible(true);
     }, 100);
@@ -149,7 +152,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
         data: groups[key].sort((a,b) => a.name.localeCompare(b.name))
       }));
     } else {
-      // Sort by Frequency or Last Performed creates a single section
       let data = [...filtered];
       if (sortBy === 'Frequency') {
         data.sort((a, b) => (b.frequency || 0) - (a.frequency || 0));
@@ -170,7 +172,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
         <GridBackground />
         <SafeAreaView style={styles.safeArea}>
           
-          {/* Header */}
           <View style={styles.headerRow}>
             <View style={styles.headerLeft}>
               <TouchableOpacity onPress={onClose} style={styles.iconBtn}>
@@ -193,7 +194,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
             </View>
           </View>
 
-          {/* Search */}
           <View style={styles.searchContainer}>
             <MaterialCommunityIcons name="magnify" size={20} color={Colors.onSurfaceVariant} style={styles.searchIcon} />
             <TextInput 
@@ -205,7 +205,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
             />
           </View>
 
-          {/* Filters */}
           <View style={styles.filtersRow}>
             <TouchableOpacity style={[styles.filterPill, filterBodyPart !== 'All' && styles.filterPillActive]} onPress={() => setFilterModalConfig({ visible: true, type: 'bodyPart' })}>
               <ThemedText type="label" size={14} color={filterBodyPart !== 'All' ? Colors.primary : Colors.onSurface}>
@@ -222,7 +221,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
             </TouchableOpacity>
           </View>
 
-          {/* List */}
           <SectionList
             sections={sections}
             keyExtractor={(item) => item.id}
@@ -234,27 +232,36 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
             )}
             renderItem={({ item }) => {
               const isSelected = selectedIds.has(item.id);
+              const isAlreadyAdded = existingExerciseNames.includes(item.name);
+
               return (
                 <TouchableOpacity 
-                  style={[styles.itemRow, isSelected && styles.itemRowSelected]}
-                  onPress={() => handleToggleSelect(item.id)}
-                  activeOpacity={0.7}
+                  style={[
+                    styles.itemRow, 
+                    isSelected && styles.itemRowSelected,
+                    isAlreadyAdded && styles.itemRowAlreadyAdded
+                  ]}
+                  onPress={() => !isAlreadyAdded && handleToggleSelect(item.id)}
+                  activeOpacity={isAlreadyAdded ? 1 : 0.7}
+                  disabled={isAlreadyAdded}
                 >
                   <View style={styles.itemLeft}>
-                    {/* Thumbnail Box */}
                     <View style={styles.thumbnailBox}>
                       <ThemedText type="headline" size={22} color={Colors.onSurface}>{item.name.charAt(0)}</ThemedText>
                     </View>
                     
                     <View style={styles.itemInfo}>
-                      <ThemedText type="headline" size={16} color={Colors.onSurface}>{item.name}</ThemedText>
+                      <ThemedText type="headline" size={16} color={isAlreadyAdded ? Colors.onSurfaceVariant : Colors.onSurface}>{item.name}</ThemedText>
                       <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{item.bodyPart} • {item.category}</ThemedText>
                     </View>
                   </View>
                   
-                  {/* Trailing Icon */}
                   <View style={styles.trailingIconContainer}>
-                    {isSelected ? (
+                    {isAlreadyAdded ? (
+                      <View style={styles.addedBadge}>
+                        <MaterialCommunityIcons name="check-circle" size={22} color={Colors.primary} />
+                      </View>
+                    ) : isSelected ? (
                       <MaterialCommunityIcons name="check" size={24} color={Colors.primary} />
                     ) : (
                       <TouchableOpacity 
@@ -292,7 +299,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
           
         </SafeAreaView>
 
-        {/* Internal Filter & Sort Select Modal (Absolute Layer to prevent iOS freeze) */}
         {filterModalConfig.visible && (
           <View style={[StyleSheet.absoluteFill, styles.pickerOverlay]}>
             <View style={styles.pickerContent}>
@@ -324,7 +330,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
           </View>
         )}
 
-        {/* Internal Create Custom Exercise Modal (Absolute Layer) */}
         {createModalVisible && (
           <View style={[StyleSheet.absoluteFill, styles.createOverlay]}>
             <View style={styles.createContent}>
@@ -346,7 +351,6 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises }: Exe
                   placeholderTextColor={Colors.onSurfaceVariant}
                   value={customName}
                   onChangeText={setCustomName}
-                  // Removed autoFocus as it can conflict with the searching keyboard toggle.
                 />
 
                 <ThemedText type="headline" size={16} style={{ marginBottom: 12, marginTop: 24 }}>Body Part</ThemedText>
@@ -482,7 +486,11 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
   itemRowSelected: {
-    backgroundColor: 'rgba(33, 93, 133, 0.4)', // The blueish selected tint from screenshot
+    backgroundColor: 'rgba(33, 93, 133, 0.4)', 
+  },
+  itemRowAlreadyAdded: {
+    backgroundColor: 'rgba(129, 236, 255, 0.05)',
+    opacity: 0.6
   },
   itemLeft: {
     flexDirection: 'row',
@@ -504,8 +512,13 @@ const styles = StyleSheet.create({
   trailingIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    width: 32,
+    minWidth: 32,
     height: 32,
+  },
+  addedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   questionIcon: {
     width: 24,
