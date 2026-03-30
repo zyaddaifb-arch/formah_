@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, WorkoutSession, Exercise } from '../types';
+import { PRESET_TEMPLATES } from '../presets';
 
 export interface WorkflowSlice {
   startWorkout: (templateId?: string) => void;
@@ -15,7 +16,8 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
     let workoutTitle = '';
 
     if (templateId) {
-      const template = templates.find((t) => t.id === templateId);
+      const allTemplates = [...templates, ...PRESET_TEMPLATES];
+      const template = allTemplates.find((t) => t.id === templateId);
       if (template) {
         initialExercises = JSON.parse(JSON.stringify(template.exercises));
         workoutTitle = template.title;

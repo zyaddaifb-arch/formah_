@@ -28,6 +28,7 @@ interface ExerciseCardProps {
   onRemoveSet: (setId: string) => void;
   onAddSet: (isWarmUp: boolean) => void;
   onLineTimerPress: (setId: string) => void;
+  isTemplateMode?: boolean;
 }
 
 export const ExerciseCard: React.FC<ExerciseCardProps> = ({
@@ -48,6 +49,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   onRemoveSet,
   onAddSet,
   onLineTimerPress,
+  isTemplateMode = false,
 }) => {
   const globalUnit = useWorkoutStore(state => state.user.weightUnit);
   const currentUnit = exercise.weightUnit || globalUnit;
@@ -106,10 +108,10 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
 
           <View style={styles.tableHeader}>
             <View style={{ flex: 1 }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>SET</ThemedText></View>
-            <View style={{ flex: 2, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>PREVIOUS</ThemedText></View>
+            {!isTemplateMode && <View style={{ flex: 2, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>PREVIOUS</ThemedText></View>}
             <View style={{ flex: 2, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>WEIGHT ({currentUnit.toUpperCase()})</ThemedText></View>
             <View style={{ flex: 1, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>REPS</ThemedText></View>
-            <View style={{ flex: 1, alignItems: 'flex-end' }}><MaterialCommunityIcons name="check" size={16} color={Colors.onSurfaceVariant}/></View>
+            {!isTemplateMode && <View style={{ flex: 1, alignItems: 'flex-end' }}><MaterialCommunityIcons name="check" size={16} color={Colors.onSurfaceVariant}/></View>}
           </View>
 
           <View style={styles.setsList}>
@@ -161,6 +163,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                         previousReps={prevSetItem?.reps || 0}
                         isInvalid={invalidSets[set.id] || {}}
                         showLineTimer={showLineTimer}
+                        isTemplateMode={isTemplateMode}
                         onUpdateSet={(data) => onUpdateSet(set.id, data)}
                         onToggleDone={() => onToggleSet(set.id, set.weight, set.reps, set.done)}
                         onPreviousPress={() => {

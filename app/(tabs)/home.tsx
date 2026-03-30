@@ -6,17 +6,23 @@ import {
   TouchableOpacity, 
   Image, 
   FlatList,
-  Dimensions
+  Dimensions,
+  Alert
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { ThemedText } from '../../components/ThemedText';
 import { GridBackground, BlurGlow } from '../../components/VisualAccents';
 import { useRouter } from 'expo-router';
+import { TemplateSummaryModal } from '../../components/TemplateSummaryModal';
+import { FolderManagementModal } from '../../components/FolderManagementModal';
+import { TemplateActionModal } from '../../components/TemplateActionModal';
+import { FolderActionModal } from '../../components/FolderActionModal';
 
 const { width } = Dimensions.get('window');
 
 import { useWorkoutStore } from '../../store/workoutStore';
+import { PRESET_TEMPLATES } from '../../store/presets';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -24,6 +30,28 @@ export default function HomeScreen() {
   const startWorkout = useWorkoutStore(state => state.startWorkout);
   const history = useWorkoutStore(state => state.history);
   const user = useWorkoutStore(state => state.user);
+  const folders = useWorkoutStore(state => state.folders);
+  
+  const [selectedTemplate, setSelectedTemplate] = React.useState<any>(null);
+  const [summaryVisible, setSummaryVisible] = React.useState(false);
+  const [folderModalVisible, setFolderModalVisible] = React.useState(false);
+  const [actionModalVisible, setActionModalVisible] = React.useState(false);
+  const [actionTemplateId, setActionTemplateId] = React.useState<string | null>(null);
+  
+  const [folderActionModalVisible, setFolderActionModalVisible] = React.useState(false);
+  const [actionFolderId, setActionFolderId] = React.useState<string | null>(null);
+
+  const [collapsedFolders, setCollapsedFolders] = React.useState<Record<string, boolean>>({});
+  const deleteFolder = useWorkoutStore(state => state.deleteFolder);
+
+  const toggleFolderCollapse = (folderId: string) => {
+    setCollapsedFolders(prev => ({ ...prev, [folderId]: !prev[folderId] }));
+  };
+
+  const handleFolderOptions = (folder: any) => {
+    setActionFolderId(folder.id);
+    setFolderActionModalVisible(true);
+  };
 
   const calculateStreak = () => {
     // Basic streak calculation, assuming sorted by start Time descending
@@ -38,20 +66,86 @@ export default function HomeScreen() {
     router.push('/active');
   };
 
+  const handleTemplatePress = (template: any) => {
+    setSelectedTemplate(template);
+    setSummaryVisible(true);
+  };
+
+  const handleModalStart = () => {
+    if (selectedTemplate) {
+      startWorkout(selectedTemplate.id);
+      setSummaryVisible(false);
+      router.push('/active');
+    }
+  };
+
+  const handleModalEdit = () => {
+    if (selectedTemplate) {
+      setSummaryVisible(false);
+      router.push({
+        pathname: '/create-template',
+        params: { templateId: selectedTemplate.id }
+      });
+    }
+  };
+
+  const handleActionMenuPress = (templateId: string) => {
+    setActionTemplateId(templateId);
+    setActionModalVisible(true);
+  };
+
+  const formatTemplateTitle = (title: string) => {
+    if (!title) return '';
+    const words = title.trim().split(/\s+/);
+    if (words.length > 2) {
+      return words.slice(0, 2).join(' ') + '...';
+    }
+    return title;
+  };
+
+  const getExercisePreview = (exercises: any[]) => {
+    if (!exercises || exercises.length === 0) return 'No exercises yet';
+    const names = exercises.map(ex => ex.name);
+    if (names.length <= 4) return names.join(', ');
+    return names.slice(0, 4).join(', ') + '...';
+  };
+
+  const getLastPerformedText = (templateId: string) => {
+    if (!history || history.length === 0) return 'Never';
+    const pastWorkouts = history.filter(w => w.templateId === templateId).sort((a,b) => b.startTime - a.startTime);
+    if (pastWorkouts.length === 0) return 'Never';
+    
+    const latest = pastWorkouts[0];
+    const daysAgo = Math.floor((Date.now() - latest.startTime) / (1000 * 60 * 60 * 24));
+    if (daysAgo === 0) return 'Today';
+    return `${daysAgo}d ago`;
+  };
+
   const renderTemplate = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.templateCard} onPress={() => { startWorkout(item.id); router.push('/active'); }}>
+    <TouchableOpacity style={styles.templateCard} onPress={() => handleTemplatePress(item)}>
       <View style={[styles.templateIconOverlay, { opacity: 0.05 }]}>
         <MaterialCommunityIcons name={item.icon as any} size={120} color={item.color} />
       </View>
-      <View>
-        <ThemedText type="headline" size={10} color={item.color} style={[styles.trackingWidest, { opacity: 0.6 }]}>{item.type.toUpperCase()}</ThemedText>
-        <ThemedText type="headline" size={24} style={styles.templateTitle}>{item.title}</ThemedText>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <View style={{ flex: 1, paddingRight: 8 }}>
+          <ThemedText type="headline" size={10} color={item.color} style={[styles.trackingWidest, { opacity: 0.6 }]}>{item.type.toUpperCase()}</ThemedText>
+          <ThemedText type="headline" size={24} style={styles.templateTitle} numberOfLines={1}>{formatTemplateTitle(item.title)}</ThemedText>
+          <ThemedText type="body" size={12} color={Colors.onSurfaceVariant} numberOfLines={2} style={{ marginTop: 8, lineHeight: 18 }}>
+            {getExercisePreview(item.exercises)}
+          </ThemedText>
+        </View>
+        <TouchableOpacity 
+          style={styles.cardActionBtn} 
+          onPress={() => handleActionMenuPress(item.id)}
+        >
+          <MaterialCommunityIcons name="dots-vertical" size={24} color={Colors.onSurfaceVariant} />
+        </TouchableOpacity>
       </View>
       <View style={styles.templateFooter}>
         <View style={styles.templateMeta}>
           <View style={styles.metaItem}>
             <MaterialCommunityIcons name="clock-outline" size={12} color={Colors.onSurfaceVariant} />
-            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{item.timeEstimate || '45m'}</ThemedText>
+            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{getLastPerformedText(item.id)}</ThemedText>
           </View>
           <View style={styles.metaItem}>
             <MaterialCommunityIcons name="format-list-bulleted" size={12} color={Colors.onSurfaceVariant} />
@@ -64,6 +158,68 @@ export default function HomeScreen() {
       </View>
     </TouchableOpacity>
   );
+
+  const renderTemplateList = (data: any[], title: string, showViewAll: boolean = false, folder?: any) => {
+    const isCollapsed = folder ? collapsedFolders[folder.id] : false;
+
+    return (
+      <View key={folder?.id || title} style={styles.templatesSection}>
+        <View style={styles.subHeader}>
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+            activeOpacity={folder ? 0.7 : 1}
+            onPress={() => folder && toggleFolderCollapse(folder.id)}
+          >
+              <ThemedText type="headline" size={20}>{title} ({data.length})</ThemedText>
+              {folder && (
+                <MaterialCommunityIcons 
+                  name={isCollapsed ? "chevron-down" : "chevron-up"} 
+                  size={20} 
+                  color={Colors.onSurfaceVariant} 
+                />
+              )}
+          </TouchableOpacity>
+
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+              {folder && (
+                  <>
+                    <TouchableOpacity onPress={() => router.push({ pathname: '/create-template', params: { folderId: folder.id } })}>
+                        <MaterialCommunityIcons name="plus-circle-outline" size={24} color={Colors.primary} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleFolderOptions(folder)}>
+                        <MaterialCommunityIcons name="dots-horizontal" size={24} color={Colors.onSurfaceVariant} />
+                    </TouchableOpacity>
+                  </>
+              )}
+              {showViewAll && (
+                <TouchableOpacity onPress={() => router.push('/all-templates')}>
+                  <ThemedText type="label" size={10} color={Colors.primary} style={styles.trackingTighter}>VIEW ALL</ThemedText>
+                </TouchableOpacity>
+              )}
+          </View>
+        </View>
+        
+        {!isCollapsed && (
+          data.length > 0 ? (
+            <FlatList
+              data={data}
+              renderItem={renderTemplate}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.templateList}
+              keyExtractor={item => item.id}
+            />
+          ) : (
+            <View style={{ paddingHorizontal: 24, paddingVertical: 16, alignItems: 'center' }}>
+              <ThemedText type="body" size={14} color={Colors.onSurfaceVariant} style={{ textAlign: 'center' }}>
+                No templates in this folder yet.
+              </ThemedText>
+            </View>
+          )
+        )}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -110,68 +266,102 @@ export default function HomeScreen() {
         <View style={styles.sectionHeader}>
           <ThemedText type="headline" size={24} color={Colors.primary}>Templates</ThemedText>
           <View style={styles.sectionActions}>
-            <TouchableOpacity style={styles.addTemplateBtn}>
+            <TouchableOpacity 
+              style={styles.addTemplateBtn}
+              onPress={() => router.push('/create-template')}
+            >
               <MaterialCommunityIcons name="plus" size={14} color={Colors.onPrimaryFixed} />
               <ThemedText type="headline" size={10} color={Colors.onPrimaryFixed}>TEMPLATE</ThemedText>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => setFolderModalVisible(true)}>
               <MaterialCommunityIcons name="folder-outline" size={20} color={Colors.onSurfaceVariant} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => router.push('/archived-templates')}>
+              <MaterialCommunityIcons name="archive-outline" size={20} color={Colors.onSurfaceVariant} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <View style={styles.templatesSection}>
-          <View style={styles.subHeader}>
-            <ThemedText type="headline" size={20}>My Templates ({templates.length})</ThemedText>
-            {templates.length > 0 && (
-              <TouchableOpacity><ThemedText type="label" size={10} color={Colors.primary} style={styles.trackingTighter}>VIEW ALL</ThemedText></TouchableOpacity>
-            )}
-          </View>
-          
-          {templates.length > 0 ? (
-            <FlatList
-              data={templates}
-              renderItem={renderTemplate}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.templateList}
-              keyExtractor={item => item.id}
-            />
-          ) : (
-            <View style={{ paddingHorizontal: 24, paddingVertical: 16, alignItems: 'center' }}>
-              <ThemedText type="body" size={14} color={Colors.onSurfaceVariant} style={{ textAlign: 'center' }}>
-                No templates yet.{"\n"}Start an empty workout to build one!
-              </ThemedText>
-            </View>
-          )}
-        </View>
+        {/* Uncategorized Templates */}
+        {renderTemplateList(
+          templates.filter(t => !t.folderId && !t.isArchived),
+          "My Templates",
+          true
+        )}
 
-        <View style={styles.exampleSection}>
-           <ThemedText type="headline" size={20} style={{ marginBottom: 12 }}>Example Workouts</ThemedText>
-           {templates.filter(t => t.id.startsWith('template_')).map(session => (
-             <ExampleRow 
-               key={session.id} 
-               title={session.title} 
-               meta={`${session.exercises.length} Exercises • ${session.timeEstimate}`} 
-               onPress={() => {
-                 startWorkout(session.id);
-                 router.push('/active');
-               }}
-             />
-           ))}
-        </View>
+        {/* Folder Sections */}
+        {folders.map(folder => 
+            renderTemplateList(
+                templates.filter(t => t.folderId === folder.id && !t.isArchived),
+                folder.name,
+                false,
+                folder
+            )
+        )}
+
+         <View style={styles.exampleSection}>
+            <ThemedText type="headline" size={20} style={{ marginBottom: 12 }}>Example Workouts</ThemedText>
+            {PRESET_TEMPLATES.map(session => (
+              <ExampleRow 
+                key={session.id} 
+                title={session.title} 
+                icon={session.icon as any}
+                color={session.color}
+                meta={`${session.exercises.length} Exercises • ${session.timeEstimate}`} 
+                onPress={() => handleTemplatePress(session)}
+              />
+            ))}
+         </View>
       </ScrollView>
+
+      <TemplateSummaryModal
+        visible={summaryVisible}
+        onClose={() => setSummaryVisible(false)}
+        template={selectedTemplate}
+        history={history}
+        onStartWorkout={handleModalStart}
+        onEditTemplate={handleModalEdit}
+      />
+
+      <FolderManagementModal
+        visible={folderModalVisible}
+        onClose={() => setFolderModalVisible(false)}
+      />
+
+      <TemplateActionModal 
+        visible={actionModalVisible} 
+        onClose={() => setActionModalVisible(false)} 
+        templateId={actionTemplateId} 
+      />
+
+      <FolderActionModal
+        visible={folderActionModalVisible}
+        onClose={() => setFolderActionModalVisible(false)}
+        folderId={actionFolderId}
+      />
     </View>
   );
 }
 
 
 
-const ExampleRow = ({ title, meta, onPress }: { title: string, meta: string, onPress?: () => void }) => (
+const ExampleRow = ({ 
+  title, 
+  meta, 
+  icon = "dumbbell", 
+  color = Colors.primary, 
+  onPress 
+}: { 
+  title: string, 
+  meta: string, 
+  icon?: any, 
+  color?: string, 
+  onPress?: () => void 
+}) => (
   <TouchableOpacity style={styles.exampleRow} onPress={onPress}>
     <View style={styles.exampleLeft}>
-      <View style={styles.exampleIcon}>
-        <MaterialCommunityIcons name="dumbbell" size={24} color={Colors.primary} />
+      <View style={[styles.exampleIcon, { backgroundColor: `${color}10` }]}>
+        <MaterialCommunityIcons name={icon} size={24} color={color} />
       </View>
       <View>
         <ThemedText type="headline" size={16}>{title}</ThemedText>
@@ -276,6 +466,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(67, 71, 88, 0.1)',
     overflow: 'hidden',
+  },
+  cardActionBtn: {
+    padding: 8,
+    marginRight: -8,
+    marginTop: -8,
   },
   templateIconOverlay: { position: 'absolute', top: -16, right: -16 },
   templateTitle: { fontWeight: 'bold' },

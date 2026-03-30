@@ -20,6 +20,7 @@ interface WorkoutSetRowProps {
   previousReps: number;
   isInvalid: { weight?: boolean; reps?: boolean };
   showLineTimer: boolean;
+  isTemplateMode?: boolean;
   onUpdateSet: (data: { weight?: number; reps?: number }) => void;
   onToggleDone: () => void;
   onPreviousPress: () => void;
@@ -34,6 +35,7 @@ export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = ({
   previousReps = 0,
   isInvalid = {},
   showLineTimer,
+  isTemplateMode = false,
   onUpdateSet,
   onToggleDone,
   onPreviousPress,
@@ -109,21 +111,23 @@ export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = ({
         />
       </View>
 
-      <View style={{ flex: 1, alignItems: 'flex-end' }}>
-        <TouchableOpacity 
-          style={[
-            styles.checkBtn, 
-            set.done && (isWarmUp ? styles.checkBtnWarmUpActive : styles.checkBtnActive)
-          ]}
-          onPress={onToggleDone}
-        >
-          <MaterialCommunityIcons 
-            name="check" 
-            size={18} 
-            color={set.done ? (isWarmUp ? '#4A3400' : Colors.onPrimary) : Colors.outlineVariant} 
-          />
-        </TouchableOpacity>
-      </View>
+      {!isTemplateMode && (
+        <View style={{ flex: 1, alignItems: 'flex-end' }}>
+          <TouchableOpacity 
+            style={[
+              styles.checkBtn, 
+              set.done && (isWarmUp ? styles.checkBtnWarmUpActive : styles.checkBtnActive)
+            ]}
+            onPress={onToggleDone}
+          >
+            <MaterialCommunityIcons 
+              name="check" 
+              size={18} 
+              color={set.done ? (isWarmUp ? '#4A3400' : Colors.onPrimary) : Colors.outlineVariant} 
+            />
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 };

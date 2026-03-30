@@ -19,22 +19,11 @@ import { useActiveTimer } from '@/hooks/workout/useActiveTimer';
 import { useLineTimers } from '@/hooks/workout/useLineTimers';
 import { useWorkoutActions } from '@/hooks/workout/useWorkoutActions';
 
-// Feature Components
+import { WorkoutEditor } from '../components/workout/WorkoutEditor';
 import { ActiveWorkoutHeader } from '../components/workout/ActiveWorkoutHeader';
 import { WorkoutProgress } from '../components/workout/WorkoutProgress';
-import { ExerciseCard } from '../components/workout/ExerciseCard';
-import { 
-  WarmUpConfigModal,
-  PreferencesModal,
-  RenameWorkoutModal, 
-  LineTimerModal,
-  ExerciseMenu
-} from '../components/workout/Modals';
-
-// Legacy/Common Components (already in components/)
-import { ExerciseSelectionModal } from '@/components/ExerciseSelectionModal';
-import { ExerciseDetailsModal } from '@/components/ExerciseDetailsModal';
 import { RestTimerModal } from '@/components/RestTimerModal';
+import { RenameWorkoutModal } from '../components/workout/Modals';
 
 export default function ActiveWorkoutScreen() {
   const router = useRouter();
@@ -64,20 +53,9 @@ export default function ActiveWorkoutScreen() {
   const { handleFinish, handleCancel } = useWorkoutActions();
 
   // Local UI State
-  const [modalVisible, setModalVisible] = useState(false);
-  const [menuActiveExerciseId, setMenuActiveExerciseId] = useState<string | null>(null);
-  const [replaceExerciseId, setReplaceExerciseId] = useState<string | null>(null);
-  const [preferencesExerciseId, setPreferencesExerciseId] = useState<string | null>(null);
-  const [warmUpConfigExerciseId, setWarmUpConfigExerciseId] = useState<string | null>(null);
-  const [exerciseDetailName, setExerciseDetailName] = useState<string | null>(null);
   const [restTimerVisible, setRestTimerVisible] = useState(false);
-  const [tempWarmUpCount, setTempWarmUpCount] = useState(2);
-  const [invalidSets, setInvalidSets] = useState<Record<string, { weight?: boolean; reps?: boolean }>>({});
-  const [lineTimerPopupId, setLineTimerPopupId] = useState<string | null>(null);
   const [renameModalVisible, setRenameModalVisible] = useState(false);
   const [renameInput, setRenameInput] = useState('');
-  const [isReordering, setIsReordering] = useState(false);
-  const [openSwipeRowId, setOpenSwipeRowId] = useState<string | null>(null);
 
   // History Caching Logic
   const previousExerciseCache = useMemo(() => {
@@ -116,61 +94,6 @@ export default function ActiveWorkoutScreen() {
   const completedSets = activeWorkout.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.done && !s.isWarmUp).length, 0);
   const progressPct = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
 
-  // Handlers
-  const handleToggleSetInternal = (exerciseId: string, setId: string, weight: number, reps: number, isDone: boolean) => {
-    if (isDone) {
-      toggleSetDone(exerciseId, setId);
-      cancelLineTimer(setId);
-      return;
-    }
-
-    if (weight <= 0 || reps <= 0) {
-      setInvalidSets(prev => ({ ...prev, [setId]: { weight: weight <= 0, reps: reps <= 0 } }));
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      return;
-    }
-
-    setInvalidSets(prev => {
-      const next = { ...prev };
-      delete next[setId];
-      return next;
-    });
-
-    toggleSetDone(exerciseId, setId);
-    startLineTimer(setId, 60);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  };
-
-  const renderExercise = ({ item: exercise, drag, isActive }: RenderItemParams<Exercise>) => (
-    <ScaleDecorator>
-       <TouchableOpacity 
-         activeOpacity={1} 
-         onLongPress={drag}
-         disabled={!isReordering}
-       >
-         <ExerciseCard
-           exercise={exercise}
-           condensed={isReordering}
-           previousData={exercise.exerciseId ? previousExerciseCache[exercise.exerciseId] : undefined}
-           invalidSets={invalidSets}
-           lineTimers={lineTimers}
-           openSwipeRowId={openSwipeRowId}
-           onOpenSwipeRow={setOpenSwipeRowId}
-           onCloseSwipeRow={() => setOpenSwipeRowId(null)}
-           onExerciseDetailPress={() => setExerciseDetailName(exercise.name)}
-           onExerciseMenuPress={setMenuActiveExerciseId}
-           onUpdateNote={(noteId, text) => updateExerciseNote(exercise.id, noteId, text)}
-           onDeleteNote={(noteId) => deleteExerciseNote(exercise.id, noteId)}
-           onToggleSet={(setId, w, r, done) => handleToggleSetInternal(exercise.id, setId, w, r, done)}
-           onUpdateSet={(setId, data) => updateSet(exercise.id, setId, data)}
-           onRemoveSet={(setId) => removeSetFromExercise(exercise.id, setId)}
-           onAddSet={(isWarmUp) => addSetToExercise(exercise.id, isWarmUp)}
-           onLineTimerPress={setLineTimerPopupId}
-         />
-       </TouchableOpacity>
-    </ScaleDecorator>
-  );
-
   return (
     <GestureHandlerRootView style={styles.container}>
       <GridBackground />
@@ -178,131 +101,59 @@ export default function ActiveWorkoutScreen() {
       <BlurGlow position="bottomLeft" color={Colors.tertiary} />
 
       <SafeAreaView style={styles.safeArea}>
-        <ActiveWorkoutHeader
-          elapsedTime={elapsedTime}
-          isRestTimerActive={activeWorkout.isRestTimerActive}
-          restTimerRemaining={activeWorkout.restTimerRemaining}
-          restTimerTarget={activeWorkout.restTimerTarget}
-          onRestTimerPress={() => setRestTimerVisible(true)}
-          onFinishPress={handleFinish}
-        />
-
-        <DraggableFlatList
-          data={activeWorkout.exercises}
-          keyExtractor={(item) => item.id}
-          renderItem={renderExercise}
-          onDragEnd={({ data }) => {
-            setExercisesOrderInActive(data);
-            setIsReordering(false);
+        <WorkoutEditor
+          mode="active"
+          title={activeWorkout.workoutTitle}
+          exercises={activeWorkout.exercises}
+          previousExerciseCache={previousExerciseCache}
+          lineTimers={lineTimers}
+          onLineTimerStart={startLineTimer}
+          onLineTimerCancel={cancelLineTimer}
+          onLineTimerAdjust={adjustLineTimer}
+          onLineTimerSkip={skipLineTimer}
+          actions={{
+            addExercise: addExerciseToActive,
+            removeExercise: removeExerciseFromActive,
+            replaceExercise: replaceExerciseInActive,
+            reorderExercises: setExercisesOrderInActive,
+            addSet: addSetToExercise,
+            removeSet: removeSetFromExercise,
+            updateSet: updateSet,
+            toggleSetDone: toggleSetDone,
+            addNote: addExerciseNote,
+            updateNote: updateExerciseNote,
+            deleteNote: deleteExerciseNote,
+            updateTitle: () => setRenameModalVisible(true), // Trigger modal in active mode
+            toggleWarmUpSets: toggleWarmUpSets,
+            updateWeightUnit: updateExerciseWeightUnit,
           }}
-          contentContainerStyle={styles.scrollContent}
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={
+          renderHeader={() => (
             <>
-              <View style={styles.workoutTitleSection}>
-                <TouchableOpacity
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}
-                  onPress={() => {
-                    setRenameInput(activeWorkout.workoutTitle);
-                    setRenameModalVisible(true);
-                  }}
-                >
-                  <ThemedText type="headline" size={30} color={Colors.onSurface} style={styles.workoutTitleLarge} numberOfLines={1}>
-                    {activeWorkout.workoutTitle}
-                  </ThemedText>
-                  <MaterialCommunityIcons name="pencil" size={16} color={Colors.primary} style={{ opacity: 0.6 }} />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.titleMenuBtn} onPress={() => setIsReordering(!isReordering)}>
-                   <MaterialCommunityIcons 
-                     name={isReordering ? "check" : "format-list-bulleted"} 
-                     size={22} 
-                     color={isReordering ? Colors.primary : Colors.onSurfaceVariant} 
-                   />
-                </TouchableOpacity>
-              </View>
-
+              <ActiveWorkoutHeader
+                elapsedTime={elapsedTime}
+                isRestTimerActive={activeWorkout.isRestTimerActive}
+                restTimerRemaining={activeWorkout.restTimerRemaining}
+                restTimerTarget={activeWorkout.restTimerTarget}
+                onRestTimerPress={() => setRestTimerVisible(true)}
+                onFinishPress={handleFinish}
+              />
               {activeWorkout.exercises.length > 0 && (
                 <WorkoutProgress progressPct={progressPct} />
               )}
-              
-              {activeWorkout.exercises.length === 0 && (
-                <View style={{ alignItems: 'center', paddingVertical: 60 }}>
-                  <MaterialCommunityIcons name="arm-flex" size={64} color={Colors.surfaceVariant} style={{ marginBottom: 16 }} />
-                  <ThemedText type="headline" size={24} color={Colors.onSurface}>Let's get to work!</ThemedText>
-                  <ThemedText type="body" size={16} color={Colors.onSurfaceVariant} style={{ textAlign: 'center', marginTop: 8 }}>
-                    Add your first exercise to begin.
-                  </ThemedText>
-                </View>
-              )}
             </>
-          }
-          ListFooterComponent={
-            <View style={styles.actionButtons}>
-              <TouchableOpacity style={styles.addExerciseBtn} onPress={() => setModalVisible(true)}>
-                <MaterialCommunityIcons name="plus-circle" size={24} color={Colors.onPrimary} />
-                <ThemedText type="headline" size={18} color={Colors.onPrimary}>Add Exercises</ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
-                <MaterialCommunityIcons name="cancel" size={20} color={Colors.error} />
-                <ThemedText type="headline" size={16} color={Colors.error}>Cancel Workout</ThemedText>
-              </TouchableOpacity>
-            </View>
-          }
+          )}
+          renderFooter={() => (
+            <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+              <MaterialCommunityIcons name="cancel" size={20} color={Colors.error} />
+              <ThemedText type="headline" size={16} color={Colors.error}>Cancel Workout</ThemedText>
+            </TouchableOpacity>
+          )}
         />
       </SafeAreaView>
-
-      {/* Feature Modals */}
-      <ExerciseSelectionModal 
-        visible={modalVisible} 
-        onClose={() => {
-          setModalVisible(false);
-          setReplaceExerciseId(null);
-        }} 
-        existingExerciseNames={activeWorkout.exercises.map(e => e.name)}
-        onAddExercises={(exercises: { id: string, name: string }[]) => {
-           if (replaceExerciseId) {
-             if (exercises.length > 0) {
-               replaceExerciseInActive(replaceExerciseId, exercises[0].id, exercises[0].name);
-             }
-             setReplaceExerciseId(null);
-           } else {
-             exercises.forEach(ex => addExerciseToActive(ex.id, ex.name));
-           }
-           setModalVisible(false);
-        }} 
-      />
-
-      <ExerciseDetailsModal
-        visible={!!exerciseDetailName}
-        onClose={() => setExerciseDetailName(null)}
-        exerciseName={exerciseDetailName || ''}
-      />
 
       <RestTimerModal
         visible={restTimerVisible}
         onClose={() => setRestTimerVisible(false)}
-      />
-
-      <WarmUpConfigModal
-        isVisible={!!warmUpConfigExerciseId}
-        tempCount={tempWarmUpCount}
-        onIncrement={() => setTempWarmUpCount(prev => Math.min(10, prev + 1))}
-        onDecrement={() => setTempWarmUpCount(prev => Math.max(1, prev - 1))}
-        onClose={() => setWarmUpConfigExerciseId(null)}
-        onConfirm={(count: number) => {
-          for(let i=0; i<count; i++) addSetToExercise(warmUpConfigExerciseId!, true);
-          if (!(activeWorkout.exercises.find(e => e.id === warmUpConfigExerciseId)?.warmUpSetsEnabled)) {
-            toggleWarmUpSets(warmUpConfigExerciseId!);
-          }
-          setWarmUpConfigExerciseId(null);
-        }}
-      />
-
-      <PreferencesModal
-        isVisible={!!preferencesExerciseId}
-        currentUnit={(activeWorkout.exercises.find(e => e.id === preferencesExerciseId)?.weightUnit as 'kg' | 'lb') || 'kg'}
-        onUnitChange={(unit: 'kg' | 'lb') => updateExerciseWeightUnit(preferencesExerciseId!, unit)}
-        onClose={() => setPreferencesExerciseId(null)}
       />
 
       <RenameWorkoutModal
@@ -314,34 +165,6 @@ export default function ActiveWorkoutScreen() {
           renameWorkout(renameInput);
           setRenameModalVisible(false);
         }}
-      />
-
-      <LineTimerModal
-        isVisible={!!lineTimerPopupId}
-        remaining={lineTimers[lineTimerPopupId || '']?.remaining || 0}
-        onAdjust={(offset: number) => adjustLineTimer(lineTimerPopupId!, offset)}
-        onSkip={() => {
-           skipLineTimer(lineTimerPopupId!);
-           setLineTimerPopupId(null);
-        }}
-        onClose={() => setLineTimerPopupId(null)}
-      />
-
-      <ExerciseMenu
-        isVisible={!!menuActiveExerciseId}
-        onClose={() => setMenuActiveExerciseId(null)}
-        hasStickyNote={activeWorkout.exercises.find(e => e.id === menuActiveExerciseId)?.notes?.some(n => n.isSticky) || false}
-        onAddNote={(isSticky) => addExerciseNote(menuActiveExerciseId!, isSticky)}
-        onAddWarmUp={() => {
-          setWarmUpConfigExerciseId(menuActiveExerciseId);
-          setTempWarmUpCount(2); 
-        }}
-        onReplace={() => {
-          setReplaceExerciseId(menuActiveExerciseId);
-          setModalVisible(true);
-        }}
-        onPreferences={() => setPreferencesExerciseId(menuActiveExerciseId)}
-        onRemove={() => removeExerciseFromActive(menuActiveExerciseId!)}
       />
     </GestureHandlerRootView>
   );
