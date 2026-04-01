@@ -1,12 +1,15 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, WorkoutSession, Exercise } from '../types';
 import { PRESET_TEMPLATES } from '../presets';
+import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 export interface WorkflowSlice {
   startWorkout: (templateId?: string) => void;
   finishWorkout: () => string | null;
   cancelWorkout: () => void;
   renameWorkout: (title: string) => void;
+  deleteSession: (sessionId: string) => void;
+  updateSession: (sessionId: string, data: Partial<WorkoutSession>) => void;
 }
 
 export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSlice> = (set, get) => ({
@@ -76,6 +79,8 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
       activeWorkout: null,
     });
 
+    SupabaseSyncService.queueMutation('workout_sessions', 'INSERT', newSession);
+
     return newSession.id;
   },
 
@@ -87,5 +92,21 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
     const { activeWorkout } = get();
     if (!activeWorkout) return;
     set({ activeWorkout: { ...activeWorkout, workoutTitle: title } });
+  },
+
+  deleteSession: (sessionId) => {
+    set((state) => ({
+      history: state.history.filter(s => s.id !== sessionId),
+    }));
+    SupabaseSyncService.queueMutation('workout_sessions', 'DELETE', { id: sessionId });
+  },
+
+  updateSession: (sessionId, data) => {
+    set((state) => {
+      const updatedHistory = state.history.map(s => s.id === sessionId ? { ...s, ...data } : s);
+      const session = updatedHistory.find(s => s.id === sessionId);
+      if (session) SupabaseSyncService.queueMutation('workout_sessions', 'UPDATE', session);
+      return { history: updatedHistory };
+    });
   },
 });

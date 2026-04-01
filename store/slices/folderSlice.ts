@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, WorkoutFolder } from '../types';
+import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 export interface FolderSlice {
   createFolder: (name: string) => void;
@@ -21,6 +22,7 @@ export const createFolderSlice: StateCreator<WorkoutStore, [], [], FolderSlice> 
     set((state) => ({
       folders: [...state.folders, newFolder],
     }));
+    SupabaseSyncService.queueMutation('folders', 'INSERT', newFolder);
   },
 
   deleteFolder: (folderId, deleteTemplates = false) => {
@@ -32,14 +34,16 @@ export const createFolderSlice: StateCreator<WorkoutStore, [], [], FolderSlice> 
             t.folderId === folderId ? { ...t, folderId: undefined } : t
           ),
     }));
+    SupabaseSyncService.queueMutation('folders', 'DELETE', { id: folderId });
   },
 
   renameFolder: (folderId, newName) => {
-    set((state) => ({
-      folders: state.folders.map((f) => 
-        f.id === folderId ? { ...f, name: newName } : f
-      ),
-    }));
+    set((state) => {
+      const folders = state.folders.map((f) => f.id === folderId ? { ...f, name: newName } : f);
+      const folder = folders.find(f => f.id === folderId);
+      if (folder) SupabaseSyncService.queueMutation('folders', 'UPDATE', folder);
+      return { folders };
+    });
   },
 
   addTemplateToFolder: (folderId, templateId) => {

@@ -1,28 +1,49 @@
 {
   "expo": {
-    "name": "formah_",
-    "slug": "formah_",
+    "name": "Formah",
+    "slug": "formah",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "scheme": "formah",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.zyaddaif.formah",
+      "icon": "./assets/images/icon.png",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "backgroundColor": "#090e1c"
+      },
+      "package": "com.zyaddaif.formah",
+      "permissions": ["CAMERA_ROLL", "CAMERA"],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#090e1c"
+    },
     "web": {
-      "output": "static"
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Formah to access your photos to change your profile picture.",
+          "cameraPermission": "Allow Formah to access your camera."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

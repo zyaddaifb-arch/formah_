@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { LibraryExercise } from '@/store/types';
+import { EXERCISE_LIBRARY } from '@/store/exerciseLibrary';
 import { 
   View, 
   StyleSheet, 
@@ -17,32 +19,9 @@ import { ThemedText } from './ThemedText';
 import { GridBackground } from './VisualAccents';
 import { ExerciseDetailsModal } from './ExerciseDetailsModal';
 
-export type LibraryExercise = {
-  id: string;
-  name: string;
-  category: string;
-  bodyPart: string;
-  image?: string;
-  frequency?: number;
-  lastPerformed?: string;
-};
+// LibraryExercise type is defined in store/types.ts
+export type { LibraryExercise } from '@/store/types';
 
-const INITIAL_LIBRARY: LibraryExercise[] = [
-  { id: '1', name: 'Ab Wheel', category: 'Reps Only', bodyPart: 'Core', frequency: 12, lastPerformed: '2025-09-01' },
-  { id: '2', name: 'Aerobics', category: 'Cardio', bodyPart: 'Full Body', frequency: 34, lastPerformed: '2025-10-15' },
-  { id: '3', name: 'Arnold Press', category: 'Dumbbell', bodyPart: 'Shoulders', frequency: 5, lastPerformed: '2025-08-20' },
-  { id: '4', name: 'Around the World', category: 'Dumbbell', bodyPart: 'Chest', frequency: 1, lastPerformed: '2025-01-10' },
-  { id: '5', name: 'Back Extension', category: 'Weighted Bodyweight', bodyPart: 'Back', frequency: 22, lastPerformed: '2025-09-30' },
-  { id: '6', name: 'Back Extension (Machine)', category: 'Machine', bodyPart: 'Back', frequency: 40, lastPerformed: '2025-10-20' },
-  { id: '7', name: 'Ball Slams', category: 'Other', bodyPart: 'Full Body', frequency: 2, lastPerformed: '2024-11-05' },
-  { id: '8', name: 'Barbell Bench Press', category: 'Barbell', bodyPart: 'Chest', frequency: 56, lastPerformed: '2025-10-25' },
-  { id: '9', name: 'Cable Crossover', category: 'Machine', bodyPart: 'Chest', frequency: 18, lastPerformed: '2025-09-15' },
-  { id: '10', name: 'Deadlift', category: 'Barbell', bodyPart: 'Back', frequency: 44, lastPerformed: '2025-10-22' },
-  { id: '11', name: 'Dumbbell Curl', category: 'Dumbbell', bodyPart: 'Arms', frequency: 60, lastPerformed: '2025-10-26' },
-  { id: '12', name: 'Overhead Press', category: 'Barbell', bodyPart: 'Shoulders', frequency: 28, lastPerformed: '2025-10-18' },
-  { id: '13', name: 'Pull-up', category: 'Weighted Bodyweight', bodyPart: 'Back', frequency: 70, lastPerformed: '2025-10-27' },
-  { id: '14', name: 'Squat', category: 'Barbell', bodyPart: 'Legs', frequency: 50, lastPerformed: '2025-10-24' },
-];
 
 export interface ExerciseSelectionModalProps {
   visible: boolean;
@@ -54,7 +33,7 @@ export interface ExerciseSelectionModalProps {
 export function ExerciseSelectionModal({ visible, onClose, onAddExercises, existingExerciseNames = [] }: ExerciseSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [library, setLibrary] = useState<LibraryExercise[]>(INITIAL_LIBRARY);
+  const [library, setLibrary] = useState<LibraryExercise[]>(EXERCISE_LIBRARY);
 
   const [filterBodyPart, setFilterBodyPart] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
@@ -77,8 +56,9 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
     }
   }, [visible]);
 
-  const BODY_PARTS = ['All', 'Arms', 'Back', 'Cardio', 'Chest', 'Core', 'Full Body', 'Legs', 'Olympic', 'Other', 'Shoulders'];
-  const CATEGORIES = ['All', 'Barbell', 'Dumbbell', 'Machine', 'Weighted Bodyweight', 'Reps Only', 'Cardio', 'Duration'];
+  const BODY_PARTS = ['All', 'Arms', 'Back', 'Cardio', 'Chest', 'Core', 'Full Body', 'Legs', 'Olympic', 'Shoulders'];
+  const CATEGORIES = ['All', 'Barbell', 'Cardio', 'Duration', 'Dumbbell', 'Machine', 'Other', 'Reps Only', 'Weighted Bodyweight'];
+
   const SORTS = ['Name', 'Frequency', 'Last Performed'];
 
   const handleToggleSelect = (id: string) => {
@@ -285,7 +265,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                   {searchQuery ? `"${searchQuery}" not found` : 'No exercises found'}
                 </ThemedText>
                 <ThemedText type="body" size={14} color={Colors.onSurfaceVariant} style={{ textAlign: 'center', marginTop: 8, marginBottom: 24 }}>
-                  Can't find what you're looking for? Add it to your custom library.
+                  Can&apos;t find what you&apos;re looking for? Add it to your custom library.
                 </ThemedText>
                 <TouchableOpacity 
                   style={styles.emptyStateBtn} 

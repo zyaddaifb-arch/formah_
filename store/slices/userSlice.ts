@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, UserData } from '../types';
+import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 export interface UserSlice {
   updateUser: (data: Partial<UserData>) => void;
@@ -9,9 +10,14 @@ export interface UserSlice {
 
 export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (set) => ({
   updateUser: (data) => {
-    set((state) => ({
-      user: { ...state.user, ...data }
-    }));
+    set((state) => {
+      const user = { ...state.user, ...data };
+      SupabaseSyncService.queueMutation('profiles', 'UPDATE', {
+        full_name: user.name,
+        avatar_url: user.avatarUri,
+      });
+      return { user };
+    });
   },
   setWeightUnit: (unit) => {
     set((state) => {
@@ -52,6 +58,10 @@ export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (s
         exercises: convertExercises(template.exercises)
       }));
 
+      SupabaseSyncService.queueMutation('profiles', 'UPDATE', {
+        weight_unit: unit,
+      });
+
       return {
         ...state,
         user: { ...state.user, weightUnit: unit },
@@ -62,8 +72,11 @@ export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (s
     });
   },
   completeOnboarding: () => {
-    set((state) => ({
-      user: { ...state.user, hasSeenOnboarding: true }
-    }));
+    set((state) => {
+      SupabaseSyncService.queueMutation('profiles', 'UPDATE', {
+        has_seen_onboarding: true,
+      });
+      return { user: { ...state.user, hasSeenOnboarding: true } };
+    });
   },
 });

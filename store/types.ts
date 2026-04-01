@@ -119,6 +119,8 @@ export interface WorkflowActions {
   finishWorkout: () => string | null;
   cancelWorkout: () => void;
   renameWorkout: (title: string) => void;
+  deleteSession: (sessionId: string) => void;
+  updateSession: (sessionId: string, data: Partial<WorkoutSession>) => void;
 }
 
 export interface TemplateActions {
@@ -173,4 +175,15 @@ export type WorkoutStore = WorkoutState &
   FolderActions & {
     reset: () => void;
   };
+
+// ─── Exercise Library ─────────────────────────────────────────────────────────
+export type LibraryExercise = {
+  id: string;
+  name: string;
+  category: string;
+  bodyPart: string;
+  image?: string;
+  frequency?: number;
+  lastPerformed?: string;
+};
 

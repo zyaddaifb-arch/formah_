@@ -1,7 +1,8 @@
+import 'react-native-gesture-handler';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts, SpaceGrotesk_700Bold, SpaceGrotesk_500Medium, SpaceGrotesk_400Regular } from '@expo-google-fonts/space-grotesk';
 import { Manrope_400Regular, Manrope_700Bold, Manrope_500Medium } from '@expo-google-fonts/manrope';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, AppState, AppStateStatus } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -10,6 +11,7 @@ import 'react-native-reanimated';
 import { supabase } from '@/utils/supabase';
 import { useAuthStore } from '@/store/authStore';
 import { useWorkoutStore } from '@/store/workoutStore';
+import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -55,6 +57,19 @@ export default function RootLayout() {
       authListener.subscription.unsubscribe();
     };
   }, []);
+
+  // Sync on App Foregrounding
+  useEffect(() => {
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (nextAppState === 'active' && session) {
+        SupabaseSyncService.attemptSync();
+      }
+    };
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, [session]);
 
   // Simplified Redirect Logic
   useEffect(() => {

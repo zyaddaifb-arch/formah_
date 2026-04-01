@@ -5,17 +5,22 @@ import {
   ScrollView, 
   TouchableOpacity, 
   Dimensions,
-  LayoutAnimation
+  LayoutAnimation,
+  Modal,
+  Alert,
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { ThemedText } from '../../components/ThemedText';
 import { GridBackground } from '../../components/VisualAccents';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
+import { useWorkoutStore } from '../../store/workoutStore';
+import { WorkoutSession } from '../../store/types';
+
+import { WorkoutSessionDetailModal } from '../../components/WorkoutSessionDetailModal';
 
 const { width } = Dimensions.get('window');
-
-import { useWorkoutStore, WorkoutSession } from '../../store/workoutStore';
-import { WorkoutSessionDetailModal } from '../../components/WorkoutSessionDetailModal';
 
 // Helper to get days in month
 const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
@@ -33,9 +38,14 @@ const isSameDay = (d1: Date, d2: Date) => {
 
 export default function HistoryScreen() {
   const history = useWorkoutStore(state => state.history);
+  const deleteSession = useWorkoutStore(state => state.deleteSession);
+  const addTemplate = useWorkoutStore(state => state.addTemplate);
+  const startWorkout = useWorkoutStore(state => state.startWorkout);
+  const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [selectedSession, setSelectedSession] = useState<WorkoutSession | null>(null);
+  const [menuSession, setMenuSession] = useState<WorkoutSession | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const listRef = useRef<View>(null);
 
@@ -86,6 +96,41 @@ export default function HistoryScreen() {
 
   const today = new Date();
 
+  const handleDeleteSession = (session: WorkoutSession) => {
+    Alert.alert(
+      'Delete Workout',
+      `Delete "${session.title}"? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Delete', style: 'destructive', onPress: () => {
+          deleteSession(session.id);
+          setMenuSession(null);
+        }}
+      ]
+    );
+  };
+
+  const handleSaveAsTemplate = (session: WorkoutSession) => {
+    addTemplate({
+      id: 'template_' + Date.now(),
+      title: session.title,
+      type: 'Custom',
+      timeEstimate: `${Math.round((session.endTime - session.startTime) / 60000)}m`,
+      exercises: session.exercises,
+      color: '#81ECFF',
+      icon: 'clipboard-text-outline',
+      isPreset: false,
+    });
+    setMenuSession(null);
+    Alert.alert('Saved!', `"${session.title}" saved as a template.`);
+  };
+
+  const handlePerformAgain = (session: WorkoutSession) => {
+    setMenuSession(null);
+    startWorkout(session.templateId);
+    router.push('/active');
+  };
+
   return (
     <View style={styles.container}>
       <GridBackground />
@@ -127,16 +172,10 @@ export default function HistoryScreen() {
               <ThemedText key={day} type="label" size={10} color={Colors.onSurfaceVariant} style={styles.dayLabel}>{day.toUpperCase()}</ThemedText>
             ))}
             
-            {/* Previous Month Padding (Empty slots) */}
-            {Array.from({ length: firstDay }).map((_, i) => {
-              return (
-                <View key={`prev-${i}`} style={styles.dayCell}>
-                  {/* Empty */}
-                </View>
-              );
-            })}
+            {Array.from({ length: firstDay }).map((_, i) => (
+              <View key={`prev-${i}`} style={styles.dayCell} />
+            ))}
 
-            {/* Current Month Days */}
             {Array.from({ length: daysInMonth }).map((_, i) => {
               const dayNum = i + 1;
               const date = new Date(viewYear, viewMonth, dayNum);
@@ -183,7 +222,6 @@ export default function HistoryScreen() {
                     </TouchableOpacity>
                 )}
             </View>
-            {/* EXPORT button removed as requested */}
           </View>
           
           <View style={styles.workoutList}>
@@ -192,12 +230,14 @@ export default function HistoryScreen() {
                 const sessionDate = new Date(item.startTime);
                 const durationMs = item.endTime - item.startTime;
                 const minutes = Math.floor(durationMs / 60000);
+                const totalSets = item.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.done).length, 0);
                 
                 return (
                   <TouchableOpacity 
                     key={item.id} 
                     style={styles.workoutCard}
                     onPress={() => setSelectedSession(item)}
+                    activeOpacity={0.8}
                   >
                     <View style={[styles.workoutIcon, { backgroundColor: Colors.primary + '10' }]}>
                       <MaterialCommunityIcons name="dumbbell" size={28} color={Colors.primary} />
@@ -205,28 +245,63 @@ export default function HistoryScreen() {
                     <View style={styles.workoutInfo}>
                       <View style={styles.workoutInfoLeft}>
                         <ThemedText type="headline" size={18}>{item.title}</ThemedText>
-                        <ThemedText type="body" size={14} color={Colors.onSurfaceVariant}>{sessionDate.toLocaleDateString()} • {minutes}mn</ThemedText>
-                      </View>
-                      <View style={styles.workoutMetric}>
-                        <ThemedText type="headline" size={20} color={Colors.primary}>{item.totalVolume || 0}</ThemedText>
-                        <ThemedText type="label" size={8} color={Colors.onSurfaceVariant} style={styles.trackingTighter}>VOLUME (KG)</ThemedText>
+                        <ThemedText type="body" size={13} color={Colors.onSurfaceVariant}>
+                          {sessionDate.toLocaleDateString()} • {minutes}m • {totalSets} sets
+                        </ThemedText>
                       </View>
                     </View>
-                    <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.onSurfaceVariant} />
+                    <TouchableOpacity
+                      style={styles.menuBtn}
+                      onPress={(e) => { e.stopPropagation(); setMenuSession(item); }}
+                      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    >
+                      <MaterialCommunityIcons name="dots-vertical" size={22} color={Colors.onSurfaceVariant} />
+                    </TouchableOpacity>
                   </TouchableOpacity>
                 );
               })
             ) : (
-              <View style={{ alignItems: 'center', paddingVertical: 40, backgroundColor: Colors.surfaceContainerHigh, borderRadius: 24, padding: 24 }}>
-                <MaterialCommunityIcons name="calendar-blank-outline" size={48} color={Colors.surfaceVariant} style={{ marginBottom: 16 }} />
-                <ThemedText type="headline" size={18} color={Colors.onSurface}>
-                    {selectedDate ? 'No workouts this day' : 'No workouts yet'}
-                </ThemedText>
-                <ThemedText type="body" size={14} color={Colors.onSurfaceVariant} style={{ textAlign: 'center', marginTop: 8 }}>
-                  {selectedDate 
-                    ? `You didn't log any sessions on ${selectedDate.toLocaleDateString('default', { month: 'long', day: 'numeric' })}.`
-                    : 'Your complete workout history will appear here once you finish a session.'}
-                </ThemedText>
+              <View style={styles.emptyState}>
+                <LinearGradient
+                  colors={['rgba(129, 236, 255, 0.05)', 'rgba(129, 236, 255, 0.02)']}
+                  style={styles.emptyStateGradient}
+                >
+                  <View style={styles.emptyIconContainer}>
+                    <MaterialCommunityIcons name="trophy-outline" size={48} color={Colors.primary} />
+                    <View style={styles.emptyIconGlow} />
+                  </View>
+                  <ThemedText type="headline" size={24} color={Colors.onSurface} style={{ textAlign: 'center' }}>
+                      {selectedDate ? 'A FRESH PAGE' : 'FORGE YOUR LEGACY'}
+                  </ThemedText>
+                  <ThemedText type="body" size={14} color={Colors.onSurfaceVariant} style={{ textAlign: 'center', marginTop: 12, lineHeight: 22 }}>
+                    {selectedDate 
+                      ? `No combat entries recorded for this date.`
+                      : 'Your training journey hasn\'t begun yet. Every titan starts with a single set.'}
+                  </ThemedText>
+                  {!selectedDate && (
+                    <TouchableOpacity 
+                      style={styles.emptyCTA}
+                      onPress={() => {
+                        useWorkoutStore.getState().startWorkout();
+                        router.push('/active');
+                      }}
+                    >
+                      <LinearGradient
+                        colors={[Colors.primary, Colors.secondary]}
+                        start={{ x: 0, y: 0 }}
+                        end={{ x: 1, y: 0 }}
+                        style={styles.ctaGradient}
+                      />
+                      <ThemedText type="headline" size={16} color={Colors.onPrimaryFixed}>START FIRST WORKOUT</ThemedText>
+                      <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.onPrimaryFixed} />
+                    </TouchableOpacity>
+                  )}
+                  {selectedDate && (
+                    <TouchableOpacity onPress={() => setSelectedDate(null)} style={{ marginTop: 20 }}>
+                      <ThemedText type="label" size={12} color={Colors.primary}>VIEW FULL HISTORY</ThemedText>
+                    </TouchableOpacity>
+                  )}
+                </LinearGradient>
               </View>
             )}
           </View>
@@ -238,6 +313,35 @@ export default function HistoryScreen() {
         session={selectedSession}
         onClose={() => setSelectedSession(null)}
       />
+
+      {/* 3-dots Action Menu */}
+      <Modal visible={menuSession !== null} transparent animationType="fade" onRequestClose={() => setMenuSession(null)}>
+        <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setMenuSession(null)}>
+          <View style={styles.menuSheet}>
+            <View style={styles.menuHandle} />
+            <ThemedText type="headline" size={16} color={Colors.onSurface} style={styles.menuTitle}>
+              {menuSession?.title}
+            </ThemedText>
+
+            {[
+              { icon: 'delete-outline', label: 'Delete', color: Colors.error, onPress: () => menuSession && handleDeleteSession(menuSession) },
+              { icon: 'content-save-outline', label: 'Save as Template', color: Colors.onSurface, onPress: () => menuSession && handleSaveAsTemplate(menuSession) },
+              { icon: 'pencil-outline', label: 'Edit Workout', color: Colors.onSurface, onPress: () => { 
+                if (menuSession) {
+                  router.push({ pathname: '/edit-session' as any, params: { sessionId: menuSession.id } });
+                  setMenuSession(null);
+                }
+              } },
+              { icon: 'play-circle-outline', label: 'Perform Again', color: Colors.primary, onPress: () => menuSession && handlePerformAgain(menuSession) },
+            ].map(action => (
+              <TouchableOpacity key={action.label} style={styles.menuItem} onPress={action.onPress}>
+                <MaterialCommunityIcons name={action.icon as any} size={22} color={action.color} />
+                <ThemedText type="headline" size={16} color={action.color}>{action.label}</ThemedText>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -370,4 +474,88 @@ const styles = StyleSheet.create({
   workoutInfoLeft: { gap: 2 },
   workoutMetric: { alignItems: 'flex-end', gap: 2 },
   trackingTighter: { letterSpacing: -0.5 },
+  emptyState: {
+    paddingTop: 20,
+    paddingBottom: 40,
+    width: '100%',
+  },
+  emptyStateGradient: {
+    padding: 40,
+    borderRadius: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(129, 236, 255, 0.1)',
+  },
+  emptyIconContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(129, 236, 255, 0.1)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+  },
+  emptyIconGlow: {
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.primary,
+    opacity: 0.2,
+  },
+  emptyCTA: {
+    marginTop: 32,
+    height: 56,
+    paddingHorizontal: 24,
+    borderRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  ctaGradient: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  menuBtn: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 18,
+  },
+  menuOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  menuSheet: {
+    backgroundColor: Colors.surfaceContainerHigh,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingHorizontal: 24,
+    paddingBottom: 40,
+    paddingTop: 16,
+  },
+  menuHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.outlineVariant,
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  menuTitle: {
+    marginBottom: 20,
+    opacity: 0.6,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
 });

@@ -117,27 +117,44 @@ export default function SummaryScreen() {
 
           <View style={styles.exercisesSection}>
              <ThemedText type="headline" size={22} style={{ marginBottom: 16 }}>Workout Details</ThemedText>
-             {session.exercises.map((ex, idx) => {
-               const bestSet = ex.sets
-                 .filter(s => s.done)
-                 .reduce((best, curr) => (curr.weight > (best?.weight || 0) ? curr : best), ex.sets[0]);
-               
+             {session.exercises.map((ex) => {
+               const doneSets = ex.sets.filter(s => s.done);
+               const warmUpSets = doneSets.filter(s => s.isWarmUp);
+               const workingSets = doneSets.filter(s => !s.isWarmUp);
+
                return (
                  <View key={ex.id} style={styles.exerciseRow}>
-                   <View style={styles.exInfo}>
-                     <ThemedText type="headline" size={18}>{ex.name}</ThemedText>
-                     <ThemedText type="body" size={14} color={Colors.onSurfaceVariant}>
-                        {ex.sets.filter(s => s.done).length} sets completed
+                   <View style={styles.exHeader}>
+                     <ThemedText type="headline" size={17}>{ex.name}</ThemedText>
+                     <ThemedText type="headline" size={10} color={Colors.primary} style={{ letterSpacing: 1.5 }}>
+                       LOG SETS: {doneSets.length}
                      </ThemedText>
                    </View>
-                   <View style={styles.exBest}>
-                     {bestSet && (
-                        <>
-                          <ThemedText type="headline" size={16} color={Colors.primary}>
-                            {bestSet.weight} x {bestSet.reps}
-                          </ThemedText>
-                          <ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>BEST SET</ThemedText>
-                        </>
+                   <View style={styles.setsLog}>
+                     {warmUpSets.length > 0 && (
+                       <ThemedText type="label" size={10} color={Colors.onSurfaceVariant} style={{ marginBottom: 4, letterSpacing: 1 }}>WARM-UP</ThemedText>
+                     )}
+                     {warmUpSets.map((s, i) => (
+                       <View key={s.id} style={styles.setLogRow}>
+                         <ThemedText type="body" size={13} color={Colors.onSurfaceVariant} style={{ width: 24 }}>W{i + 1}</ThemedText>
+                         <ThemedText type="headline" size={13} color={Colors.onSurfaceVariant}>
+                           {s.weight > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
+                         </ThemedText>
+                       </View>
+                     ))}
+                     {workingSets.length > 0 && warmUpSets.length > 0 && (
+                       <ThemedText type="label" size={10} color={Colors.onSurfaceVariant} style={{ marginTop: 6, marginBottom: 4, letterSpacing: 1 }}>WORKING</ThemedText>
+                     )}
+                     {workingSets.map((s, i) => (
+                       <View key={s.id} style={styles.setLogRow}>
+                         <ThemedText type="body" size={13} color={Colors.onSurfaceVariant} style={{ width: 24 }}>{i + 1}</ThemedText>
+                         <ThemedText type="headline" size={13} color={Colors.onSurface}>
+                           {s.weight > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
+                         </ThemedText>
+                       </View>
+                     ))}
+                     {doneSets.length === 0 && (
+                       <ThemedText type="body" size={13} color={Colors.onSurfaceVariant}>No sets completed</ThemedText>
                      )}
                    </View>
                  </View>
@@ -226,16 +243,20 @@ const styles = StyleSheet.create({
   streakCount: { marginLeft: 16 },
   exercisesSection: { marginBottom: 40 },
   exerciseRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     backgroundColor: Colors.surfaceContainerLow,
     padding: 16,
     borderRadius: 16,
     marginBottom: 12,
+    gap: 12,
   },
-  exInfo: { gap: 2 },
-  exBest: { alignItems: 'flex-end' },
+  exHeader: { gap: 2 },
+  setsLog: { gap: 4 },
+  setLogRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 2,
+  },
   doneBtn: {
     height: 64,
     backgroundColor: Colors.primary,

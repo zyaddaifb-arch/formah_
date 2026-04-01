@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '@/utils/supabase';
 import { Session, User } from '@supabase/supabase-js';
 import { useWorkoutStore } from './workoutStore';
+import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 interface AuthState {
   session: Session | null;
@@ -43,13 +44,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         console.error('Error fetching profile:', error);
       }
 
-      if (data?.full_name) {
-        useWorkoutStore.getState().updateUser({ name: data.full_name });
-      }
-
       set({ profile: data || null, loading: false });
-    } catch (error) {
 
+      // After verifying profile exists (or creating it initially), pull the rest of the workout data
+      await SupabaseSyncService.pullSync();
+
+    } catch (error) {
       console.error('Fetch profile error:', error);
       set({ loading: false });
     }

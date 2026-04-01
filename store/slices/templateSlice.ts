@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, WorkoutTemplate, Exercise, SetData } from '../types';
+import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 export interface TemplateSlice {
   addTemplate: (template: WorkoutTemplate) => void;
@@ -170,12 +171,14 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
     if (!draftTemplate) return;
 
     const existingIndex = templates.findIndex(t => t.id === draftTemplate.id);
+    const newTemplates = [...templates];
     if (existingIndex >= 0) {
-      const newTemplates = [...templates];
       newTemplates[existingIndex] = draftTemplate;
       set({ templates: newTemplates, draftTemplate: null });
+      SupabaseSyncService.queueMutation('workout_templates', 'UPDATE', draftTemplate);
     } else {
       set({ templates: [...templates, draftTemplate], draftTemplate: null });
+      SupabaseSyncService.queueMutation('workout_templates', 'INSERT', draftTemplate);
     }
   },
 
@@ -260,25 +263,28 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
   },
 
   archiveTemplate: (id: string) => {
-    set((state) => ({
-      templates: state.templates.map(t => 
-        t.id === id ? { ...t, isArchived: true } : t
-      )
-    }));
+    set((state) => {
+      const templates = state.templates.map(t => t.id === id ? { ...t, isArchived: true } : t);
+      const template = templates.find(t => t.id === id);
+      if (template) SupabaseSyncService.queueMutation('workout_templates', 'UPDATE', template);
+      return { templates };
+    });
   },
 
   unarchiveTemplate: (id: string) => {
-    set((state) => ({
-      templates: state.templates.map(t => 
-        t.id === id ? { ...t, isArchived: false } : t
-      )
-    }));
+    set((state) => {
+      const templates = state.templates.map(t => t.id === id ? { ...t, isArchived: false } : t);
+      const template = templates.find(t => t.id === id);
+      if (template) SupabaseSyncService.queueMutation('workout_templates', 'UPDATE', template);
+      return { templates };
+    });
   },
 
   deleteTemplate: (id: string) => {
     set((state) => ({
       templates: state.templates.filter(t => t.id !== id)
     }));
+    SupabaseSyncService.queueMutation('workout_templates', 'DELETE', { id });
   },
 
   duplicateTemplate: (id: string) => {
@@ -296,21 +302,24 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
     set((state) => ({
       templates: [...state.templates, duplicated]
     }));
+    SupabaseSyncService.queueMutation('workout_templates', 'INSERT', duplicated);
   },
 
   renameTemplate: (id: string, newName: string) => {
-    set((state) => ({
-      templates: state.templates.map(t => 
-        t.id === id ? { ...t, title: newName } : t
-      )
-    }));
+    set((state) => {
+      const templates = state.templates.map(t => t.id === id ? { ...t, title: newName } : t);
+      const template = templates.find(t => t.id === id);
+      if (template) SupabaseSyncService.queueMutation('workout_templates', 'UPDATE', template);
+      return { templates };
+    });
   },
   
   moveTemplate: (id: string, folderId?: string) => {
-    set((state) => ({
-      templates: state.templates.map(t => 
-        t.id === id ? { ...t, folderId } : t
-      )
-    }));
+    set((state) => {
+      const templates = state.templates.map(t => t.id === id ? { ...t, folderId } : t);
+      const template = templates.find(t => t.id === id);
+      if (template) SupabaseSyncService.queueMutation('workout_templates', 'UPDATE', template);
+      return { templates };
+    });
   },
 });

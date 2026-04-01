@@ -13,6 +13,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { ThemedText } from '../../components/ThemedText';
 import { GridBackground, BlurGlow } from '../../components/VisualAccents';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { TemplateSummaryModal } from '../../components/TemplateSummaryModal';
 import { FolderManagementModal } from '../../components/FolderManagementModal';
@@ -308,21 +309,48 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Uncategorized Templates */}
-        {renderTemplateList(
-          templates.filter(t => !t.folderId && !t.isArchived),
-          "My Templates",
-          true
-        )}
+        {/* Templates Section */}
+        {templates.filter(t => !t.folderId && !t.isArchived).length === 0 && folders.length === 0 ? (
+          <View style={styles.homeEmptyState}>
+            <LinearGradient
+              colors={['rgba(129, 236, 255, 0.08)', 'rgba(129, 236, 255, 0.03)']}
+              style={styles.emptyHomeGradient}
+            >
+              <View style={styles.emptyHomeHeader}>
+                <MaterialCommunityIcons name="lightning-bolt" size={32} color={Colors.primary} />
+                <ThemedText type="headline" size={24}>COMMAND YOUR GAINS</ThemedText>
+              </View>
+              <ThemedText type="body" size={14} color={Colors.onSurfaceVariant} style={{ lineHeight: 22, marginBottom: 24 }}>
+                Setup your custom training templates to track progress with clinical precision.
+              </ThemedText>
+              <TouchableOpacity 
+                style={styles.homeCtaBtn}
+                onPress={() => router.push('/create-template')}
+              >
+                <ThemedText type="headline" size={14} color={Colors.onPrimaryFixed}>CREATE TEMPLATE</ThemedText>
+                <MaterialCommunityIcons name="plus" size={18} color={Colors.onPrimaryFixed} />
+              </TouchableOpacity>
+            </LinearGradient>
+          </View>
+        ) : (
+          <>
+            {/* Uncategorized Templates */}
+            {renderTemplateList(
+              templates.filter(t => !t.folderId && !t.isArchived),
+              "My Templates",
+              true
+            )}
 
-        {/* Folder Sections */}
-        {folders.map(folder => 
-            renderTemplateList(
-                templates.filter(t => t.folderId === folder.id && !t.isArchived),
-                folder.name,
-                false,
-                folder
-            )
+            {/* Folder Sections */}
+            {folders.map(folder => 
+                renderTemplateList(
+                    templates.filter(t => t.folderId === folder.id && !t.isArchived),
+                    folder.name,
+                    false,
+                    folder
+                )
+            )}
+          </>
         )}
 
          <View style={styles.exampleSection}>
@@ -527,4 +555,32 @@ const styles = StyleSheet.create({
   exampleLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   exampleIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.surfaceVariant, alignItems: 'center', justifyContent: 'center' },
   trackingWide: { letterSpacing: 1 },
+  homeEmptyState: {
+    marginBottom: 40,
+  },
+  emptyHomeGradient: {
+    padding: 32,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(129, 236, 255, 0.1)',
+  },
+  emptyHomeHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 16,
+  },
+  homeCtaBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.primary,
+    height: 56,
+    borderRadius: 16,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
 });

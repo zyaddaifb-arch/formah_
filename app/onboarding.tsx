@@ -19,6 +19,7 @@ import Animated, {
   interpolate, 
   Extrapolate,
   useAnimatedScrollHandler,
+  SharedValue,
 } from 'react-native-reanimated';
 
 import { Colors, Typography } from '../constants/Colors';
@@ -51,7 +52,7 @@ const ONBOARDING_DATA = [
   }
 ];
 
-const OnboardingSlide = ({ item, index, scrollX }: { item: any, index: number, scrollX: Animated.SharedValue<number> }) => {
+const OnboardingSlide = ({ item, index, scrollX }: { item: any, index: number, scrollX: SharedValue<number> }) => {
   const imageStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       scrollX.value,
@@ -141,6 +142,28 @@ const OnboardingSlide = ({ item, index, scrollX }: { item: any, index: number, s
   );
 };
 
+const PaginationDot = ({ index, scrollX, color }: { index: number, scrollX: SharedValue<number>, color: string }) => {
+  const dotStyle = useAnimatedStyle(() => {
+    const widthSize = interpolate(
+      scrollX.value,
+      [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH],
+      [8, 24, 8],
+      Extrapolate.CLAMP
+    );
+    return {
+      width: widthSize,
+      opacity: interpolate(
+        scrollX.value,
+        [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH],
+        [0.3, 1, 0.3],
+        Extrapolate.CLAMP
+      )
+    };
+  });
+  
+  return <Animated.View style={[styles.dot, dotStyle, { backgroundColor: color }]} />;
+};
+
 export default function OnboardingScreen() {
   const router = useRouter();
   const completeOnboarding = useWorkoutStore(state => state.completeOnboarding);
@@ -189,26 +212,9 @@ export default function OnboardingScreen() {
 
       <View style={styles.footer}>
         <View style={styles.pagination}>
-          {ONBOARDING_DATA.map((_, i) => {
-            const dotStyle = useAnimatedStyle(() => {
-              const width = interpolate(
-                scrollX.value,
-                [(i - 1) * SCREEN_WIDTH, i * SCREEN_WIDTH, (i + 1) * SCREEN_WIDTH],
-                [8, 24, 8],
-                Extrapolate.CLAMP
-              );
-              return {
-                width,
-                opacity: interpolate(
-                  scrollX.value,
-                  [(i - 1) * SCREEN_WIDTH, i * SCREEN_WIDTH, (i + 1) * SCREEN_WIDTH],
-                  [0.3, 1, 0.3],
-                  Extrapolate.CLAMP
-                )
-              };
-            });
-            return <Animated.View key={i} style={[styles.dot, dotStyle, { backgroundColor: ONBOARDING_DATA[i].color }]} />;
-          })}
+          {ONBOARDING_DATA.map((_, i) => (
+            <PaginationDot key={i} index={i} scrollX={scrollX} color={ONBOARDING_DATA[i].color} />
+          ))}
         </View>
 
         <View style={styles.buttonWrapper}>

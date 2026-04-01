@@ -21,7 +21,6 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           style={StyleSheet.absoluteFill}
         />
         <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill} />
-        <View style={styles.topBorder} />
       </View>
 
       {/* Interactive Layer */}
@@ -106,14 +105,6 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 100,
     backgroundColor: 'transparent',
-  },
-  topBorder: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    backgroundColor: 'rgba(112, 117, 135, 0.4)',
   },
   tabBarMain: {
     flexDirection: 'row',

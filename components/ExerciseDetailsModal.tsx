@@ -12,22 +12,18 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Typography } from '@/constants/Colors';
 import { ThemedText } from './ThemedText';
 import { GridBackground, BlurGlow } from './VisualAccents';
+import { EXERCISE_INSTRUCTIONS } from '@/store/exerciseLibrary';
+import { useWorkoutStore } from '@/store/workoutStore';
 
 const { width, height } = Dimensions.get('window');
 
-// Mock data for exercise details
+// Detailed records/history still stored here for preset exercises
 export const EXERCISE_DETAILS_DATA: Record<string, {
-  instructions: string[];
+  instructions?: string[];
   records: { label: string; value: string }[];
   history: { date: string; summary: string }[];
 }> = {
   'Ab Wheel': {
-    instructions: [
-      'Hold the ab wheel with both hands and kneel on the floor.',
-      'Place the ab roller on the floor in front of your knees. This is your starting position.',
-      'Slowly roll the wheel forward in a controlled manner, stretching out the torso as far as you can without touching the floor with your body.',
-      'Stop when fully stretched and pause for a moment.'
-    ],
     records: [
       { label: 'Max Sets', value: '5' },
       { label: 'Max Reps', value: '15' },
@@ -40,11 +36,6 @@ export const EXERCISE_DETAILS_DATA: Record<string, {
     ]
   },
   'Barbell Bench Press': {
-    instructions: [
-      'Lie on a flat bench. Grip the bar slightly wider than shoulder-width.',
-      'Bring the bar down to your chest.',
-      'Press the bar upward until arms are extended.'
-    ],
     records: [
       { label: '1RM', value: '100 kg' },
       { label: 'Est. 1RM', value: '105 kg' },
@@ -69,15 +60,35 @@ interface ExerciseDetailsModalProps {
   onClose: () => void;
 }
 
-import { useWorkoutStore } from '@/store/workoutStore';
+
 
 export function ExerciseDetailsModal({ visible, exerciseName, onClose }: ExerciseDetailsModalProps) {
   const [activeTab, setActiveTab] = useState<'Instructions' | 'History' | 'Bests'>('Instructions');
   const globalUnit = useWorkoutStore(state => state.user.weightUnit);
+  const allHistory = useWorkoutStore(state => state.history);
   
   if (!exerciseName) return null;
-  
-  const rawData = EXERCISE_DETAILS_DATA[exerciseName] || DEFAULT_DETAILS;
+
+  // Build real history for this exercise from the workout store
+  const exerciseHistory = allHistory
+    .map(session => {
+      const ex = session.exercises.find(e => e.name === exerciseName);
+      if (!ex) return null;
+      const doneSets = ex.sets.filter(s => s.done && !s.isWarmUp);
+      if (doneSets.length === 0) return null;
+      const date = new Date(session.startTime).toLocaleDateString('default', { day: 'numeric', month: 'short', year: 'numeric' });
+      const summary = doneSets.map((s, i) => `Set ${i + 1}: ${s.weight > 0 ? `${s.weight}${globalUnit}` : 'BW'} × ${s.reps}`).join('  •  ');
+      return { date, summary };
+    })
+    .filter(Boolean) as { date: string; summary: string }[];
+
+  const rawDetailsData = EXERCISE_DETAILS_DATA[exerciseName];
+  const instructions = rawDetailsData?.instructions ?? EXERCISE_INSTRUCTIONS[exerciseName] ?? DEFAULT_DETAILS.instructions;
+  const rawData = {
+    instructions,
+    records: rawDetailsData?.records ?? DEFAULT_DETAILS.records,
+    history: exerciseHistory.length > 0 ? exerciseHistory : rawDetailsData?.history ?? DEFAULT_DETAILS.history,
+  };
 
   // Process data to replace 'kg' with global unit
   const data = {

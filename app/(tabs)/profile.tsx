@@ -7,10 +7,13 @@ import {
   Image,
   Dimensions,
   TextInput,
-  Alert
+  Alert,
+  Platform,
+  Linking
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+import * as WebBrowser from 'expo-web-browser';
 import { Colors } from '../../constants/Colors';
 import { ThemedText } from '../../components/ThemedText';
 import { GridBackground } from '../../components/VisualAccents';
@@ -34,22 +37,34 @@ export default function ProfileScreen() {
   const streakDays = streakData.currentStreak;
 
   const handlePickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
-    if (permissionResult.granted === false) {
-      Alert.alert("Permission Required", "You need to allow access to your photos to change your profile picture.");
-      return;
-    }
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert(
+          'Permission Required',
+          'We need access to your photos to change your profile picture.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Settings', onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings() }
+          ]
+        );
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
 
-    if (!result.canceled) {
-      updateUser({ avatarUri: result.assets[0].uri });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        updateUser({ avatarUri: result.assets[0].uri });
+      }
+    } catch (e) {
+      console.error('Photo Picker Error:', e);
+      Alert.alert('Error', 'An unexpected error occurred while opening the photo library.');
     }
   };
 
@@ -82,6 +97,42 @@ export default function ProfileScreen() {
       [
         { text: "Cancel", style: "cancel" },
         { text: "Log Out", style: "destructive", onPress: () => signOut() }
+      ]
+    );
+  };
+
+  const handeOpenURL = async (url: string) => {
+    try {
+      await WebBrowser.openBrowserAsync(url);
+    } catch (error) {
+      Alert.alert("Error", "Could not open the link.");
+    }
+  };
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "Delete Account",
+      "Are you sure? This will permanently delete all your workout history and profile data. This action cannot be undone.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { 
+          text: "Delete Permanently", 
+          style: "destructive", 
+          onPress: async () => {
+             const { user } = useAuthStore.getState();
+             if (user) {
+                // Delete data from profiles table
+                const { error } = await supabase.from('profiles').delete().eq('id', user.id);
+                if (error) {
+                  Alert.alert("Error", "Could not delete data. Please try again later.");
+                  return;
+                }
+                // Sign out and clear local storage
+                await signOut();
+                Alert.alert("Account Deleted", "Your data has been scheduled for deletion.");
+             }
+          } 
+        }
       ]
     );
   };
@@ -170,21 +221,37 @@ export default function ProfileScreen() {
               </View>
             </View>
             <SettingItem icon="bell-outline" label="Notifications" />
-            <View style={styles.settingItemRow}>
-              <View style={styles.settingItemLeft}>
-                <MaterialCommunityIcons name="weather-night" size={24} color={Colors.primary} style={{ opacity: 0.6 }} />
-                <ThemedText type="body">Dark Mode</ThemedText>
-              </View>
-              <View style={styles.toggleSwitch}>
-                <View style={styles.toggleKnob} />
-              </View>
-            </View>
           </SettingGroup>
 
-          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-            <MaterialCommunityIcons name="logout" size={20} color={Colors.error} />
-            <ThemedText type="headline" size={14} color={Colors.error} style={styles.trackingWidest}>LOG OUT</ThemedText>
-          </TouchableOpacity>
+          <SettingGroup title="SUPPORT & LEGAL">
+            <SettingItem 
+              icon="help-circle-outline" 
+              label="Contact Support" 
+              onPress={() => handeOpenURL('mailto:support@formah.com')} 
+            />
+            <SettingItem 
+              icon="shield-check-outline" 
+              label="Privacy Policy" 
+              onPress={() => handeOpenURL('https://formah.com/privacy')} 
+            />
+            <SettingItem 
+              icon="file-document-outline" 
+              label="Terms of Service" 
+              onPress={() => handeOpenURL('https://formah.com/terms')} 
+            />
+          </SettingGroup>
+
+          <View style={styles.actionButtons}>
+            <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+              <MaterialCommunityIcons name="logout" size={20} color={Colors.onSurface} />
+              <ThemedText type="headline" size={14} color={Colors.onSurface} style={styles.trackingWidest}>LOG OUT</ThemedText>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteAccount}>
+              <MaterialCommunityIcons name="delete-forever-outline" size={20} color={Colors.error} />
+              <ThemedText type="headline" size={14} color={Colors.error} style={styles.trackingWidest}>DELETE ACCOUNT</ThemedText>
+            </TouchableOpacity>
+          </View>
 
           <ThemedText type="body" size={10} color={Colors.onSurfaceVariant} style={styles.versionText}>FORMAH OS v2.4.0</ThemedText>
         </View>
@@ -211,8 +278,8 @@ const SettingGroup = ({ title, children }: { title: string, children: React.Reac
   </View>
 );
 
-const SettingItem = ({ icon, label }: { icon: string, label: string }) => (
-  <TouchableOpacity style={styles.settingItemRow}>
+const SettingItem = ({ icon, label, onPress }: { icon: string, label: string, onPress?: () => void }) => (
+  <TouchableOpacity style={styles.settingItemRow} onPress={onPress}>
     <View style={styles.settingItemLeft}>
       <MaterialCommunityIcons name={icon as any} size={24} color={Colors.primary} style={{ opacity: 0.6 }} />
       <ThemedText type="body">{label}</ThemedText>
@@ -250,6 +317,9 @@ const styles = StyleSheet.create({
   unitBtnActive: { backgroundColor: Colors.primary },
   toggleSwitch: { width: 44, height: 26, backgroundColor: Colors.primary, borderRadius: 13, justifyContent: 'center', paddingHorizontal: 4 },
   toggleKnob: { width: 18, height: 18, backgroundColor: Colors.onPrimaryFixed, borderRadius: 9, marginLeft: 'auto' },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: 'rgba(255, 113, 108, 0.05)', height: 64, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255, 113, 108, 0.1)' },
+  actionButtons: { gap: 12 },
+  logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: Colors.surfaceContainerHigh, height: 60, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)' },
+  deleteBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: 'rgba(255, 113, 108, 0.05)', height: 60, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255, 113, 108, 0.1)' },
   versionText: { textAlign: 'center', marginTop: 16, opacity: 0.3, letterSpacing: 3 },
 });
+
