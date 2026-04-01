@@ -73,6 +73,7 @@ export interface UserData {
   name: string;
   avatarUri: string | null;
   weightUnit: 'kg' | 'lb';
+  hasSeenOnboarding: boolean;
 }
 
 export interface WorkoutState {
@@ -150,6 +151,7 @@ export interface TemplateActions {
 export interface UserActions {
   updateUser: (data: Partial<UserData>) => void;
   setWeightUnit: (unit: 'kg' | 'lb') => void;
+  completeOnboarding: () => void;
 }
 
 export interface FolderActions {
@@ -168,4 +170,7 @@ export type WorkoutStore = WorkoutState &
   WorkflowActions & 
   TemplateActions &
   UserActions &
-  FolderActions;
+  FolderActions & {
+    reset: () => void;
+  };
+

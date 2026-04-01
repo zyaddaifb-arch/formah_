@@ -13,7 +13,7 @@ import { createFolderSlice } from './slices/folderSlice';
 
 export const useWorkoutStore = create<WorkoutStore>()(
   persist(
-    (...a) => ({
+    (set, get, store) => ({
       templates: [],
       folders: [],
       history: [],
@@ -23,18 +23,34 @@ export const useWorkoutStore = create<WorkoutStore>()(
         name: 'Alex Thorne',
         avatarUri: null,
         weightUnit: 'lb',
+        hasSeenOnboarding: false,
       },
-      ...createExerciseSlice(...a),
-      ...createSetSlice(...a),
-      ...createTimerSlice(...a),
-      ...createWorkflowSlice(...a),
-      ...createTemplateSlice(...a),
-      ...createUserSlice(...a),
-      ...createFolderSlice(...a),
+      ...createExerciseSlice(set, get, store),
+      ...createSetSlice(set, get, store),
+      ...createTimerSlice(set, get, store),
+      ...createWorkflowSlice(set, get, store),
+      ...createTemplateSlice(set, get, store),
+      ...createUserSlice(set, get, store),
+      ...createFolderSlice(set, get, store),
+      reset: () => set({
+        templates: [],
+        folders: [],
+        history: [],
+        activeWorkout: null,
+        draftTemplate: null,
+        user: {
+          name: 'Alex Thorne',
+          avatarUri: null,
+          weightUnit: 'lb',
+          hasSeenOnboarding: false,
+        },
+      }),
     }),
+
     {
       name: 'formah-workout-storage',
       storage: createJSONStorage(() => AsyncStorage),
     }
   )
 );
+

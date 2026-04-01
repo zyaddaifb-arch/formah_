@@ -4,6 +4,7 @@ import { WorkoutStore, UserData } from '../types';
 export interface UserSlice {
   updateUser: (data: Partial<UserData>) => void;
   setWeightUnit: (unit: 'kg' | 'lb') => void;
+  completeOnboarding: () => void;
 }
 
 export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (set) => ({
@@ -59,5 +60,10 @@ export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (s
         templates: nextTemplates,
       };
     });
+  },
+  completeOnboarding: () => {
+    set((state) => ({
+      user: { ...state.user, hasSeenOnboarding: true }
+    }));
   },
 });

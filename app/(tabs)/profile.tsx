@@ -16,22 +16,22 @@ import { ThemedText } from '../../components/ThemedText';
 import { GridBackground } from '../../components/VisualAccents';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useWorkoutStore } from '../../store/workoutStore';
+import { calculateStreakData } from '../../utils/streak';
+import { useAuthStore } from '@/store/authStore';
+import { supabase } from '@/utils/supabase';
+
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const { user, history, updateUser, setWeightUnit } = useWorkoutStore();
+  const { signOut } = useAuthStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user.name);
 
-  const calculateStreak = () => {
-    if (history.length === 0) return 0;
-    // Simple logic for now
-    return history.length;
-  };
-
+  const streakData = React.useMemo(() => calculateStreakData(history), [history]);
   const totalWorkouts = history.length;
-  const streakDays = calculateStreak();
+  const streakDays = streakData.currentStreak;
 
   const handlePickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -53,13 +53,37 @@ export default function ProfileScreen() {
     }
   };
 
-  const handleSaveName = () => {
+  const handleSaveName = async () => {
     if (nameInput.trim()) {
-      updateUser({ name: nameInput.trim() });
+      const newName = nameInput.trim();
+      updateUser({ name: newName });
+      
+      // Sync to Supabase if logged in
+      const { user } = useAuthStore.getState();
+      if (user) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({ full_name: newName })
+          .eq('id', user.id);
+        
+        if (error) console.error('Error syncing name to Supabase:', error);
+      }
     } else {
       setNameInput(user.name);
     }
     setIsEditingName(false);
+  };
+
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Log Out",
+      "Are you sure you want to log out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Log Out", style: "destructive", onPress: () => signOut() }
+      ]
+    );
   };
 
   return (
@@ -115,7 +139,7 @@ export default function ProfileScreen() {
 
         <View style={styles.statsRow}>
           <StatBox label="TOTAL WORKOUTS" value={totalWorkouts.toString()} color={Colors.primary} />
-          <StatBox label="STREAK DAYS" value={streakDays.toString()} color={Colors.tertiary} />
+          <StatBox label="WEEKLY STREAK" value={streakDays.toString()} color={Colors.tertiary} />
         </View>
 
         <View style={styles.settingsSection}>
@@ -157,7 +181,7 @@ export default function ProfileScreen() {
             </View>
           </SettingGroup>
 
-          <TouchableOpacity style={styles.logoutBtn}>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
             <MaterialCommunityIcons name="logout" size={20} color={Colors.error} />
             <ThemedText type="headline" size={14} color={Colors.error} style={styles.trackingWidest}>LOG OUT</ThemedText>
           </TouchableOpacity>
@@ -169,6 +193,7 @@ export default function ProfileScreen() {
     </View>
   );
 }
+
 
 const StatBox = ({ label, value, color }: { label: string, value: string, color: string }) => (
   <View style={styles.statBox}>

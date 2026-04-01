@@ -18,6 +18,12 @@ export interface TemplateSlice {
   addDraftExerciseNote: (exerciseId: string, isSticky: boolean) => void;
   replaceDraftExercise: (oldExerciseId: string, newExerciseId: string, newName: string) => void;
   updateDraftTemplate: (data: Partial<WorkoutTemplate>) => void;
+  archiveTemplate: (id: string) => void;
+  unarchiveTemplate: (id: string) => void;
+  deleteTemplate: (id: string) => void;
+  duplicateTemplate: (id: string) => void;
+  renameTemplate: (id: string, newName: string) => void;
+  moveTemplate: (id: string, folderId?: string) => void;
 }
 
 export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSlice> = (set, get) => ({
@@ -296,6 +302,14 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
     set((state) => ({
       templates: state.templates.map(t => 
         t.id === id ? { ...t, title: newName } : t
+      )
+    }));
+  },
+  
+  moveTemplate: (id: string, folderId?: string) => {
+    set((state) => ({
+      templates: state.templates.map(t => 
+        t.id === id ? { ...t, folderId } : t
       )
     }));
   },

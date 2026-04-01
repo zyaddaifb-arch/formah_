@@ -2,17 +2,25 @@ import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts, SpaceGrotesk_700Bold, SpaceGrotesk_500Medium, SpaceGrotesk_400Regular } from '@expo-google-fonts/space-grotesk';
 import { Manrope_400Regular, Manrope_700Bold, Manrope_500Medium } from '@expo-google-fonts/manrope';
 import { View, ActivityIndicator } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { supabase } from '@/utils/supabase';
+import { useAuthStore } from '@/store/authStore';
+import { useWorkoutStore } from '@/store/workoutStore';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const [loaded, error] = useFonts({
+  const router = useRouter();
+  const segments = useSegments();
+  const { setSession, setUser, fetchProfile, session, loading } = useAuthStore();
+  const [isAppReady, setIsAppReady] = useState(false);
+  
+  const [loaded] = useFonts({
     SpaceGrotesk_400Regular,
     SpaceGrotesk_500Medium,
     SpaceGrotesk_700Bold,
@@ -21,17 +29,63 @@ export default function RootLayout() {
     Manrope_700Bold,
   });
 
+  // Initial Auth Check
   useEffect(() => {
-    if (error) throw error;
-  }, [error]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id).finally(() => setIsAppReady(true));
+      } else {
+        setIsAppReady(true);
+      }
+    });
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) fetchProfile(session.user.id);
+
+      if (event === 'PASSWORD_RECOVERY') {
+        router.push('/reset-password');
+      }
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, []);
+
+  // Simplified Redirect Logic
+  useEffect(() => {
+    if (!loaded || !isAppReady) return;
+
+    const onboardingSeen = useWorkoutStore.getState().user.hasSeenOnboarding;
+    const firstSegment = segments[0] as string;
+    
+    // Define screen groups
+    const isAuthScreen = ['auth', 'forgot-password', 'reset-password', 'onboarding'].includes(firstSegment);
+    const isProtectedScreen = ['(tabs)', 'active'].includes(firstSegment);
+    const isRoot = !firstSegment;
+
+    if (!session) {
+      if (isProtectedScreen || isRoot) {
+        router.replace(!onboardingSeen ? '/onboarding' : '/auth');
+      }
+    } else {
+      if (isAuthScreen || isRoot) {
+        router.replace('/(tabs)/home');
+      }
+    }
+  }, [session, segments, loaded, isAppReady]);
 
   useEffect(() => {
-    if (loaded) {
+    if (loaded && isAppReady) {
       SplashScreen.hideAsync();
     }
-  }, [loaded]);
+  }, [loaded, isAppReady]);
 
-  if (!loaded) {
+  if (!loaded || !isAppReady) {
     return (
       <View style={{ flex: 1, backgroundColor: '#090E1C', justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#81ECFF" />
@@ -44,9 +98,12 @@ export default function RootLayout() {
       <View style={{ flex: 1 }}>
         <Stack screenOptions={{ headerShown: false, animation: 'fade' }}>
           <Stack.Screen name="index" />
+          <Stack.Screen name="onboarding" />
           <Stack.Screen name="auth" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="active" />
+          <Stack.Screen name="forgot-password" />
+          <Stack.Screen name="reset-password" />
         </Stack>
         <StatusBar style="light" />
       </View>

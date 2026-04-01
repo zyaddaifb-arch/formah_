@@ -13,6 +13,7 @@ import { ThemedText } from '@/components/ThemedText';
 import { GridBackground, BlurGlow } from '@/components/VisualAccents';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useWorkoutStore } from '@/store/workoutStore';
+import { calculateStreakData } from '@/utils/streak';
 
 const { width } = Dimensions.get('window');
 
@@ -24,6 +25,8 @@ export default function SummaryScreen() {
   const session = useMemo(() => {
     return history.find(s => s.id === sessionId);
   }, [history, sessionId]);
+
+  const streakData = useMemo(() => calculateStreakData(history), [history]);
 
   if (!session) {
     return (
@@ -100,13 +103,15 @@ export default function SummaryScreen() {
 
           <View style={styles.streakModule}>
              <View style={styles.streakInfo}>
-               <ThemedText type="headline" size={24}>SMART STREAK</ThemedText>
+               <ThemedText type="headline" size={24}>WEEKLY STREAK</ThemedText>
                <ThemedText type="body" size={14} color={Colors.onSurfaceVariant}>
-                 You're on a 5-day tear! Consistency is your secret weapon.
+                 {streakData.currentStreak > 1 
+                   ? `You're on a ${streakData.currentStreak}-day tear! Consistency is your secret weapon.`
+                   : "Great start! Keep this momentum going to build your streak."}
                </ThemedText>
              </View>
              <View style={styles.streakCount}>
-                <ThemedText type="headline" size={32} color={Colors.primary}>🔥 5</ThemedText>
+                <ThemedText type="headline" size={32} color={Colors.primary}>🔥 {streakData.currentStreak}</ThemedText>
              </View>
           </View>
 

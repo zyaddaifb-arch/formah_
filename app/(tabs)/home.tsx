@@ -23,6 +23,9 @@ const { width } = Dimensions.get('window');
 
 import { useWorkoutStore } from '../../store/workoutStore';
 import { PRESET_TEMPLATES } from '../../store/presets';
+import { calculateStreakData } from '../../utils/streak';
+import { StreakGlow } from '../../components/StreakGlow';
+import { StreakDetailsModal } from '../../components/StreakDetailsModal';
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -53,13 +56,10 @@ export default function HomeScreen() {
     setFolderActionModalVisible(true);
   };
 
-  const calculateStreak = () => {
-    // Basic streak calculation, assuming sorted by start Time descending
-    if (history.length === 0) return 0;
-    return history.length; // Placeholder for real streak logic later
-  };
+  const [streakModalVisible, setStreakModalVisible] = React.useState(false);
 
-  const streakDays = calculateStreak();
+  const streakData = React.useMemo(() => calculateStreakData(history), [history]);
+  const streakDays = streakData.currentStreak;
 
   const handleStartWorkout = () => {
     startWorkout();
@@ -240,28 +240,54 @@ export default function HomeScreen() {
           <ThemedText type="headline" size={20} color={Colors.onPrimaryFixed}>Start Workout</ThemedText>
         </TouchableOpacity>
 
-        <View style={styles.streakCard}>
+        <TouchableOpacity 
+          style={styles.streakCard} 
+          onPress={() => setStreakModalVisible(true)}
+          activeOpacity={0.9}
+        >
           <View style={styles.streakGlowContainer}>
-            <MaterialCommunityIcons name="fire" size={96} color={Colors.primary} style={{ opacity: 0.1 }} />
+            <View style={{ position: 'absolute', top: 40, right: 40 }}>
+              <StreakGlow active={streakDays > 0} color={Colors.primary} />
+            </View>
+            <MaterialCommunityIcons 
+              name="fire" 
+              size={120} 
+              color={Colors.primary} 
+              style={{ 
+                opacity: streakDays > 0 ? 0.4 : 0.1,
+                position: 'absolute',
+                top: -10,
+                right: -10,
+              }} 
+            />
           </View>
           <View>
             <ThemedText type="label" size={10} color={Colors.onSurfaceVariant} style={styles.trackingWidest}>CURRENT MOMENTUM</ThemedText>
             <View style={styles.streakMain}>
               <ThemedText type="headline" size={60} color={streakDays > 0 ? Colors.primary : Colors.onSurfaceVariant}>{streakDays}</ThemedText>
-              <ThemedText type="headline" size={20} style={styles.streakLabel}>DAY STREAK</ThemedText>
+              <ThemedText type="headline" size={24} style={styles.streakLabel}>WEEKLY STREAK</ThemedText>
             </View>
           </View>
           <View style={styles.streakFooter}>
             <View style={styles.weekDots}>
-              {['M', 'T', 'W', 'T', 'F'].map((day, i) => (
-                <View key={i} style={[styles.dayDot, i < 3 ? styles.dayDotActive : styles.dayDotInactive]}>
-                  <ThemedText type="headline" size={10} color={i < 3 ? Colors.onPrimary : Colors.onSurfaceVariant}>{day}</ThemedText>
+              {['S', 'S', 'M', 'T', 'W', 'T', 'F'].map((day, i) => (
+                <View key={i} style={[
+                  styles.dayDot, 
+                  streakData.weeklyActivity[i] ? styles.dayDotActive : styles.dayDotInactive
+                ]}>
+                  <ThemedText 
+                    type="headline" 
+                    size={10} 
+                    color={streakData.weeklyActivity[i] ? Colors.onPrimary : Colors.onSurfaceVariant}
+                  >
+                    {day}
+                  </ThemedText>
                 </View>
               ))}
             </View>
             <ThemedText type="body" size={11} color={Colors.onSurfaceVariant}>Keep it up, {user.name.split(' ')[0]}.</ThemedText>
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.sectionHeader}>
           <ThemedText type="headline" size={24} color={Colors.primary}>Templates</ThemedText>
@@ -338,6 +364,12 @@ export default function HomeScreen() {
         visible={folderActionModalVisible}
         onClose={() => setFolderActionModalVisible(false)}
         folderId={actionFolderId}
+      />
+
+      <StreakDetailsModal
+        visible={streakModalVisible}
+        onClose={() => setStreakModalVisible(false)}
+        data={streakData}
       />
     </View>
   );
@@ -429,7 +461,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  dayDotActive: { backgroundColor: Colors.primary },
+  dayDotActive: { 
+    backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowRadius: 10,
+    shadowOpacity: 0.5,
+  },
   dayDotInactive: { backgroundColor: Colors.surfaceVariant, borderColor: Colors.outlineVariant },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 },
   sectionActions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
