@@ -1,5 +1,6 @@
-export * from './WarmUpConfigModal';
-export * from './PreferencesModal';
-export * from './RenameWorkoutModal';
-export * from './LineTimerModal';
-export * from './ExerciseMenu';
+export { WarmUpConfigModal } from './WarmUpConfigModal';
+export { PreferencesModal } from './PreferencesModal';
+export { LineTimerModal } from './LineTimerModal';
+export { RenameWorkoutModal } from './RenameWorkoutModal';
+export { ExerciseMenu } from './ExerciseMenu';
+export { FocusMetricModal } from './FocusMetricModal';

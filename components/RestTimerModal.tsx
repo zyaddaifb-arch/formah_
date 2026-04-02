@@ -1,16 +1,17 @@
 import React from 'react';
-import { 
-  View, 
-  StyleSheet, 
-  Modal, 
-  TouchableOpacity, 
-  Dimensions 
+import {
+  View,
+  StyleSheet,
+  Modal,
+  TouchableOpacity,
+  Dimensions,
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from './ThemedText';
 import { useWorkoutStore } from '../store/workoutStore';
+import { useRestTimer } from '@/hooks/workout/useRestTimer';
 
 const { width } = Dimensions.get('window');
 
@@ -20,8 +21,9 @@ interface RestTimerModalProps {
 }
 
 export function RestTimerModal({ visible, onClose }: RestTimerModalProps) {
-  const isRestTimerActive = useWorkoutStore(state => state.activeWorkout?.isRestTimerActive);
-  const restTimerRemaining = useWorkoutStore(state => state.activeWorkout?.restTimerRemaining);
+  // PERF: Uses useRestTimer hook (local interval) instead of subscribing to store's
+  // restTimerRemaining (which no longer ticks in the store).
+  const { remaining: restTimerRemaining, target: restTimerTarget, isActive: isRestTimerActive } = useRestTimer();
   const stopRestTimer = useWorkoutStore(state => state.stopRestTimer);
   const startRestTimer = useWorkoutStore(state => state.startRestTimer);
   const adjustRestTimer = useWorkoutStore(state => state.adjustRestTimer);
@@ -50,24 +52,24 @@ export function RestTimerModal({ visible, onClose }: RestTimerModalProps) {
       <View style={styles.overlay}>
         <BlurView intensity={80} tint="dark" style={styles.blurBg}>
           <TouchableOpacity style={styles.closeArea} activeOpacity={1} onPress={onClose} />
-          
+
           <View style={styles.sheet}>
             <ThemedText type="headline" size={24} style={styles.title}>
-              {isRestTimerActive && restTimerRemaining === 0 ? "FINISHED!" : "Rest Timer"}
+              {isRestTimerActive && restTimerRemaining === 0 ? 'FINISHED!' : 'Rest Timer'}
             </ThemedText>
 
             {isRestTimerActive ? (
               <View style={styles.activeDisplay}>
                 <View style={[styles.timerCircle, restTimerRemaining === 0 && styles.timerCircleFinished]}>
                   <ThemedText type="headline" size={64} color={restTimerRemaining === 0 ? Colors.error : Colors.primary} style={styles.timerLarge}>
-                    {restTimerRemaining === 0 ? "0:00" : formatTime(restTimerRemaining || 0)}
+                    {restTimerRemaining === 0 ? '0:00' : formatTime(restTimerRemaining || 0)}
                   </ThemedText>
                 </View>
 
                 {restTimerRemaining === 0 ? (
-                   <TouchableOpacity style={styles.skipBtn} onPress={handleSkip}>
-                     <ThemedText type="headline" size={18} color={Colors.onPrimary}>Close Timer</ThemedText>
-                   </TouchableOpacity>
+                  <TouchableOpacity style={styles.skipBtn} onPress={handleSkip}>
+                    <ThemedText type="headline" size={18} color={Colors.onPrimary}>Close Timer</ThemedText>
+                  </TouchableOpacity>
                 ) : (
                   <>
                     <View style={styles.adjustRow}>
@@ -88,8 +90,8 @@ export function RestTimerModal({ visible, onClose }: RestTimerModalProps) {
             ) : (
               <View style={styles.emptyState}>
                 <View style={styles.setupContainer}>
-                  <TouchableOpacity 
-                    style={styles.adjustCircleBtn} 
+                  <TouchableOpacity
+                    style={styles.adjustCircleBtn}
                     onPress={() => setSelectedDuration(prev => Math.max(15, prev - 15))}
                   >
                     <MaterialCommunityIcons name="minus" size={24} color={Colors.primary} />
@@ -101,8 +103,8 @@ export function RestTimerModal({ visible, onClose }: RestTimerModalProps) {
                     </ThemedText>
                   </View>
 
-                  <TouchableOpacity 
-                    style={styles.adjustCircleBtn} 
+                  <TouchableOpacity
+                    style={styles.adjustCircleBtn}
                     onPress={() => setSelectedDuration(prev => prev + 15)}
                   >
                     <MaterialCommunityIcons name="plus" size={24} color={Colors.primary} />
@@ -111,9 +113,9 @@ export function RestTimerModal({ visible, onClose }: RestTimerModalProps) {
 
                 <View style={styles.presetsRow}>
                   {presets.map(p => (
-                    <TouchableOpacity 
-                      key={p} 
-                      style={[styles.presetBtn, selectedDuration === p && styles.presetBtnActive]} 
+                    <TouchableOpacity
+                      key={p}
+                      style={[styles.presetBtn, selectedDuration === p && styles.presetBtnActive]}
                       onPress={() => setSelectedDuration(p)}
                     >
                       <ThemedText type="label" size={12} color={selectedDuration === p ? Colors.onPrimary : Colors.onSurfaceVariant}>
@@ -133,7 +135,7 @@ export function RestTimerModal({ visible, onClose }: RestTimerModalProps) {
               <ThemedText type="headline" size={16} color={Colors.onSurfaceVariant}>Close</ThemedText>
             </TouchableOpacity>
           </View>
-          
+
           <TouchableOpacity style={styles.closeArea} activeOpacity={1} onPress={onClose} />
         </BlurView>
       </View>
@@ -145,10 +147,10 @@ const styles = StyleSheet.create({
   overlay: { flex: 1 },
   blurBg: { flex: 1, justifyContent: 'center', alignItems: 'center', padding: 24 },
   closeArea: { flex: 1, width: '100%' },
-  sheet: { 
-    backgroundColor: '#161923', 
-    borderRadius: 32, 
-    padding: 32, 
+  sheet: {
+    backgroundColor: '#161923',
+    borderRadius: 32,
+    padding: 32,
     alignItems: 'center',
     width: '100%',
     shadowColor: '#000',
@@ -161,13 +163,13 @@ const styles = StyleSheet.create({
   },
   title: { marginBottom: 32 },
   activeDisplay: { width: '100%', alignItems: 'center' },
-  timerCircle: { 
-    width: 200, 
-    height: 200, 
-    borderRadius: 100, 
-    borderWidth: 4, 
-    borderColor: 'rgba(129, 236, 255, 0.2)', 
-    alignItems: 'center', 
+  timerCircle: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 4,
+    borderColor: 'rgba(129, 236, 255, 0.2)',
+    alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 40,
     shadowColor: Colors.primary,
@@ -180,66 +182,62 @@ const styles = StyleSheet.create({
   },
   timerLarge: { letterSpacing: -2 },
   adjustRow: { flexDirection: 'row', gap: 16, marginBottom: 40 },
-  adjustBtn: { 
-    backgroundColor: 'rgba(255,255,255,0.05)', 
-    paddingHorizontal: 24, 
-    paddingVertical: 14, 
+  adjustBtn: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 24,
+    paddingVertical: 14,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  skipBtn: { 
-    backgroundColor: Colors.error, 
-    width: '100%', 
-    height: 64, 
-    borderRadius: 20, 
-    alignItems: 'center', 
+  skipBtn: {
+    backgroundColor: Colors.error,
+    width: '100%',
+    height: 64,
+    borderRadius: 20,
+    alignItems: 'center',
     justifyContent: 'center',
     shadowColor: Colors.error,
     shadowRadius: 15,
     shadowOpacity: 0.3,
   },
   emptyState: { alignItems: 'center', width: '100%' },
-  setupContainer: { 
-    flexDirection: 'row', 
-    alignItems: 'center', 
-    justifyContent: 'space-between', 
-    width: '100%', 
+  setupContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
     marginBottom: 32,
     paddingHorizontal: 20,
   },
-  adjustCircleBtn: { 
-    width: 56, 
-    height: 56, 
-    borderRadius: 28, 
-    backgroundColor: 'rgba(129, 236, 255, 0.1)', 
-    alignItems: 'center', 
+  adjustCircleBtn: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(129, 236, 255, 0.1)',
+    alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(129, 236, 255, 0.2)',
   },
   durationDisplay: { alignItems: 'center' },
-  presetsRow: { 
-    flexDirection: 'row', 
-    gap: 8, 
-    marginBottom: 40 
-  },
-  presetBtn: { 
-    paddingHorizontal: 16, 
-    paddingVertical: 10, 
-    borderRadius: 12, 
+  presetsRow: { flexDirection: 'row', gap: 8, marginBottom: 40 },
+  presetBtn: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  presetBtnActive: { 
+  presetBtnActive: {
     backgroundColor: Colors.primary,
     borderColor: Colors.primary,
   },
-  startBtn: { 
-    backgroundColor: Colors.primary, 
+  startBtn: {
+    backgroundColor: Colors.primary,
     width: '100%',
-    height: 64, 
+    height: 64,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',

@@ -12,6 +12,7 @@ import { supabase } from '@/utils/supabase';
 import { useAuthStore } from '@/store/authStore';
 import { useWorkoutStore } from '@/store/workoutStore';
 import { SupabaseSyncService } from '@/services/SupabaseSyncService';
+import { soundService } from '@/services/SoundService';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -21,6 +22,7 @@ export default function RootLayout() {
   const segments = useSegments();
   const { setSession, setUser, fetchProfile, session, loading } = useAuthStore();
   const [isAppReady, setIsAppReady] = useState(false);
+  const _hasHydrated = useWorkoutStore(state => state._hasHydrated);
   
   const [loaded] = useFonts({
     SpaceGrotesk_400Regular,
@@ -54,7 +56,17 @@ export default function RootLayout() {
     });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
+  }, []);
+
+  // Initialize Sound Service
+  useEffect(() => {
+    soundService.init();
+    return () => {
+      soundService.unloadAll();
     };
   }, []);
 
@@ -73,7 +85,7 @@ export default function RootLayout() {
 
   // Simplified Redirect Logic
   useEffect(() => {
-    if (!loaded || !isAppReady) return;
+    if (!loaded || !isAppReady || !_hasHydrated) return;
 
     const onboardingSeen = useWorkoutStore.getState().user.hasSeenOnboarding;
     const firstSegment = segments[0] as string;
@@ -95,12 +107,12 @@ export default function RootLayout() {
   }, [session, segments, loaded, isAppReady]);
 
   useEffect(() => {
-    if (loaded && isAppReady) {
+    if (loaded && isAppReady && _hasHydrated) {
       SplashScreen.hideAsync();
     }
-  }, [loaded, isAppReady]);
+  }, [loaded, isAppReady, _hasHydrated]);
 
-  if (!loaded || !isAppReady) {
+  if (!loaded || !isAppReady || !_hasHydrated) {
     return (
       <View style={{ flex: 1, backgroundColor: '#090E1C', justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#81ECFF" />

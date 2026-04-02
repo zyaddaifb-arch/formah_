@@ -4,7 +4,7 @@ import { WorkoutStore } from '../types';
 export interface TimerSlice {
   startRestTimer: (exerciseId?: string, forceSeconds?: number) => void;
   stopRestTimer: () => void;
-  tickRestTimer: () => void;
+  tickRestTimer: () => void;  // kept for API compatibility but now a no-op
   adjustRestTimer: (offset: number) => void;
 }
 
@@ -21,11 +21,17 @@ export const createTimerSlice: StateCreator<WorkoutStore, [], [], TimerSlice> = 
       }
     }
 
+    // PERF FIX: Store the end timestamp instead of the remaining time.
+    // The UI derives `remaining` locally using Date.now() in a useEffect loop —
+    // this way, the store is updated ONCE (on start/stop) instead of every second.
+    const endTimestamp = Date.now() + duration * 1000;
+
     set({
       activeWorkout: {
         ...activeWorkout,
+        restTimerEndTimestamp: endTimestamp,
         restTimerTarget: duration,
-        restTimerRemaining: duration,
+        restTimerRemaining: duration, // initial snapshot for compatibility
         isRestTimerActive: true,
       }
     });
@@ -38,36 +44,34 @@ export const createTimerSlice: StateCreator<WorkoutStore, [], [], TimerSlice> = 
       activeWorkout: {
         ...activeWorkout,
         isRestTimerActive: false,
+        restTimerEndTimestamp: undefined,
         restTimerRemaining: 0,
       }
     });
   },
 
+  // PERF FIX: tickRestTimer is now a no-op.
+  // Remaining time is computed in the UI from `restTimerEndTimestamp`.
+  // Kept for backward-compat so callers don't blow up.
   tickRestTimer: () => {
-    const { activeWorkout } = get();
-    if (!activeWorkout || !activeWorkout.isRestTimerActive) return;
-
-    if (activeWorkout.restTimerRemaining <= 0) return;
-
-    set({
-      activeWorkout: {
-        ...activeWorkout,
-        restTimerRemaining: activeWorkout.restTimerRemaining - 1,
-      }
-    });
+    // intentionally empty — do NOT call set() here
   },
 
   adjustRestTimer: (offset) => {
     const { activeWorkout } = get();
     if (!activeWorkout) return;
 
-    const newRemaining = Math.max(0, activeWorkout.restTimerRemaining + offset);
-    
+    if (!activeWorkout.isRestTimerActive || !activeWorkout.restTimerEndTimestamp) return;
+
+    const newEndTimestamp = activeWorkout.restTimerEndTimestamp + offset * 1000;
+    const newRemaining = Math.max(0, Math.round((newEndTimestamp - Date.now()) / 1000));
+
     set({
       activeWorkout: {
         ...activeWorkout,
+        restTimerEndTimestamp: newEndTimestamp,
         restTimerRemaining: newRemaining,
-        isRestTimerActive: true, 
+        isRestTimerActive: true,
       }
     });
   },

@@ -26,10 +26,12 @@ export const createSetSlice: StateCreator<WorkoutStore, [], [], SetSlice> = (set
         }
         if (!referenceSet) referenceSet = ex.sets[ex.sets.length - 1];
 
-        const newSet = {
+        const exerciseType = ex.exerciseType || 'weight_reps';
+        const newSet: SetData = {
           id: Date.now().toString() + '_' + (ex.sets.length + 1),
-          weight: referenceSet ? referenceSet.weight : 0,
-          reps: referenceSet ? referenceSet.reps : 0,
+          weight: exerciseType === 'weight_reps' ? (referenceSet?.weight ?? 0) : undefined,
+          reps: exerciseType !== 'duration' ? (referenceSet?.reps ?? 0) : undefined,
+          time: exerciseType === 'duration' ? (referenceSet?.time ?? 0) : undefined,
           done: false,
           isWarmUp: isWarmUpFlag,
         };
@@ -150,7 +152,12 @@ export const createSetSlice: StateCreator<WorkoutStore, [], [], SetSlice> = (set
       return {
         ...ex,
         sets: ex.sets.map((s) => {
-          if (!s.done && s.weight > 0 && s.reps > 0) {
+          const isWeightRepsValid = ex.exerciseType === 'weight_reps' && (s.weight ?? 0) > 0 && (s.reps ?? 0) > 0;
+          const isRepsOnlyValid = ex.exerciseType === 'reps_only' && (s.reps ?? 0) > 0;
+          const isDurationValid = ex.exerciseType === 'duration' && (s.time ?? 0) > 0;
+          const isLegacyValid = !ex.exerciseType && (s.weight ?? 0) > 0 && (s.reps ?? 0) > 0;
+
+          if (!s.done && (isWeightRepsValid || isRepsOnlyValid || isDurationValid || isLegacyValid)) {
             return { ...s, done: true };
           }
           return s;

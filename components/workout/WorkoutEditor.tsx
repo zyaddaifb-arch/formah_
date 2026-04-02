@@ -1,13 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import { soundService } from '@/services/SoundService';
 
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
-import { Exercise } from '@/store/types';
+import { Exercise, FocusMetricType } from '@/store/types';
 
 // Feature Components
 import { ExerciseCard } from './ExerciseCard';
@@ -15,7 +16,8 @@ import {
   WarmUpConfigModal,
   PreferencesModal,
   LineTimerModal,
-  ExerciseMenu
+  ExerciseMenu,
+  FocusMetricModal
 } from './Modals';
 import { ExerciseSelectionModal } from '@/components/ExerciseSelectionModal';
 import { ExerciseDetailsModal } from '@/components/ExerciseDetailsModal';
@@ -35,6 +37,7 @@ export interface WorkoutActions {
   updateTitle: (title: string) => void;
   toggleWarmUpSets?: (exerciseId: string) => void;
   updateWeightUnit?: (exerciseId: string, unit: 'kg' | 'lb') => void;
+  updateFocusMetric?: (exerciseId: string, metric: FocusMetricType) => void;
 }
 
 interface WorkoutEditorProps {
@@ -76,21 +79,42 @@ export function WorkoutEditor({
   const [warmUpConfigExerciseId, setWarmUpConfigExerciseId] = useState<string | null>(null);
   const [exerciseDetailName, setExerciseDetailName] = useState<string | null>(null);
   const [lineTimerPopupId, setLineTimerPopupId] = useState<string | null>(null);
+  const [focusMetricExerciseId, setFocusMetricExerciseId] = useState<string | null>(null);
   const [openSwipeRowId, setOpenSwipeRowId] = useState<string | null>(null);
   const [invalidSets, setInvalidSets] = useState<Record<string, { weight?: boolean; reps?: boolean }>>({});
   const [tempWarmUpCount, setTempWarmUpCount] = useState(2);
 
-  const handleToggleSetInternal = (exerciseId: string, setId: string, weight: number, reps: number, isDone: boolean) => {
+  // PERF: useCallback gives this function a stable identity so it doesn't cause
+  // renderExercise (and all ExerciseCards) to re-render when unrelated state changes.
+  const handleToggleSetInternal = useCallback((exercise: Exercise, setId: string, weight?: number, reps?: number, time?: number, isDone?: boolean) => {
     if (mode === 'template') return;
 
     if (isDone) {
-      actions.toggleSetDone?.(exerciseId, setId);
+      actions.toggleSetDone?.(exercise.id, setId);
       onLineTimerCancel?.(setId);
       return;
     }
 
-    if (weight <= 0 || reps <= 0) {
-      setInvalidSets(prev => ({ ...prev, [setId]: { weight: weight <= 0, reps: reps <= 0 } }));
+    let isValid = true;
+    const currentInvalidState: { weight?: boolean; reps?: boolean } = {};
+
+    if (exercise.exerciseType === 'duration') {
+      if ((time ?? 0) <= 0) isValid = false;
+    } else if (exercise.exerciseType === 'reps_only') {
+      if ((reps ?? 0) <= 0) isValid = false;
+    } else {
+      if ((weight ?? 0) <= 0) {
+          isValid = false;
+          currentInvalidState.weight = true;
+      }
+      if ((reps ?? 0) <= 0) {
+          isValid = false;
+          currentInvalidState.reps = true;
+      }
+    }
+
+    if (!isValid) {
+      setInvalidSets(prev => ({ ...prev, [setId]: currentInvalidState }));
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       return;
     }
@@ -101,12 +125,16 @@ export function WorkoutEditor({
       return next;
     });
 
-    actions.toggleSetDone?.(exerciseId, setId);
+    actions.toggleSetDone?.(exercise.id, setId);
     onLineTimerStart?.(setId);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  };
+    soundService.playDoneSet();
+  }, [mode, actions, onLineTimerCancel, onLineTimerStart]);
 
-  const renderExercise = ({ item: exercise, drag, isActive }: RenderItemParams<Exercise>) => (
+
+  // PERF: useCallback ensures renderExercise doesn't get a new reference on every render.
+  // Without this, React.memo on ExerciseCard would be bypassed entirely because
+  // the parent re-render would always create a new function reference for renderItem.
+  const renderExercise = useCallback(({ item: exercise, drag, isActive }: RenderItemParams<Exercise>) => (
     <ScaleDecorator>
        <TouchableOpacity 
          activeOpacity={1} 
@@ -125,17 +153,28 @@ export function WorkoutEditor({
             onCloseSwipeRow={() => setOpenSwipeRowId(null)}
             onExerciseDetailPress={() => setExerciseDetailName(exercise.name)}
             onExerciseMenuPress={setMenuActiveExerciseId}
+            onSetFocusMetric={setFocusMetricExerciseId}
             onUpdateNote={(noteId, text) => actions.updateNote(exercise.id, noteId, text)}
             onDeleteNote={(noteId) => actions.deleteNote(exercise.id, noteId)}
-            onToggleSet={(setId, w, r, done) => handleToggleSetInternal(exercise.id, setId, w, r, done)}
+            onToggleSet={(setId, w, r, t, done) => handleToggleSetInternal(exercise, setId, w, r, t, done)}
             onUpdateSet={(setId, data) => actions.updateSet(exercise.id, setId, data)}
-            onRemoveSet={(setId) => actions.removeSet(exercise.id, setId)}
-            onAddSet={(isWarmUp) => actions.addSet(exercise.id, isWarmUp)}
+            onRemoveSet={(setId) => {
+              actions.removeSet(exercise.id, setId);
+              soundService.playRemoveSet();
+            }}
+            onAddSet={(isWarmUp) => {
+              actions.addSet(exercise.id, isWarmUp);
+              soundService.playAddSet();
+            }}
             onLineTimerPress={setLineTimerPopupId}
          />
        </TouchableOpacity>
     </ScaleDecorator>
-  );
+  ), [
+    isReordering, mode, previousExerciseCache, invalidSets, lineTimers,
+    openSwipeRowId, actions, handleToggleSetInternal,
+  ]);
+
 
   return (
     <>
@@ -295,6 +334,14 @@ export function WorkoutEditor({
            setLineTimerPopupId(null);
         }}
         onClose={() => setLineTimerPopupId(null)}
+      />
+
+      <FocusMetricModal
+        isVisible={!!focusMetricExerciseId}
+        onClose={() => setFocusMetricExerciseId(null)}
+        currentSets={exercises.find(e => e.id === focusMetricExerciseId)?.sets || []}
+        previousSets={previousExerciseCache[(exercises.find(e => e.id === focusMetricExerciseId)?.exerciseId || '')]?.sets}
+        unit={(exercises.find(e => e.id === focusMetricExerciseId)?.weightUnit as 'kg' | 'lb') || 'kg'}
       />
     </>
   );

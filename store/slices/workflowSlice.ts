@@ -42,6 +42,8 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
         templateId,
         workoutTitle,
         exercises: initialExercises,
+        // PERF: No restTimerEndTimestamp at start — timer hasn't been started yet
+        restTimerEndTimestamp: undefined,
         restTimerRemaining: 0,
         restTimerTarget: 60,
         isRestTimerActive: false,
@@ -57,7 +59,7 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
     activeWorkout.exercises.forEach((ex) => {
       ex.sets.forEach((set) => {
         if (set.done && !set.isWarmUp) {
-          totalVolume += (set.weight * set.reps);
+          totalVolume += ((set.weight ?? 0) * (set.reps ?? 1));
         }
       });
     });

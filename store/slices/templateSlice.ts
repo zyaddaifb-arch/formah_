@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { WorkoutStore, WorkoutTemplate, Exercise, SetData } from '../types';
+import { WorkoutStore, WorkoutTemplate, Exercise, SetData, FocusMetricType } from '../types';
 import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 export interface TemplateSlice {
@@ -25,6 +25,7 @@ export interface TemplateSlice {
   duplicateTemplate: (id: string) => void;
   renameTemplate: (id: string, newName: string) => void;
   moveTemplate: (id: string, folderId?: string) => void;
+  updateDraftExerciseFocusMetric: (exerciseId: string, metric: FocusMetricType) => void;
 }
 
 export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSlice> = (set, get) => ({
@@ -321,5 +322,17 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
       if (template) SupabaseSyncService.queueMutation('workout_templates', 'UPDATE', template);
       return { templates };
     });
+  },
+
+  updateDraftExerciseFocusMetric: (exerciseId, metric) => {
+    const { draftTemplate } = get();
+    if (!draftTemplate) return;
+    const updatedExercises = draftTemplate.exercises.map(ex => {
+      if (ex.id === exerciseId) {
+        return { ...ex, focusMetric: metric };
+      }
+      return ex;
+    });
+    set({ draftTemplate: { ...draftTemplate, exercises: updatedExercises } });
   },
 });

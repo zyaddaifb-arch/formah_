@@ -1,10 +1,8 @@
 import React, { useState, useMemo } from 'react';
-import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 
 // Constants & UI Primitives
@@ -14,10 +12,10 @@ import { GridBackground, BlurGlow } from '@/components/VisualAccents';
 
 // Main Store & Hooks
 import { useWorkoutStore } from '@/store/workoutStore';
-import { Exercise } from '@/store/types';
 import { useActiveTimer } from '@/hooks/workout/useActiveTimer';
 import { useLineTimers } from '@/hooks/workout/useLineTimers';
 import { useWorkoutActions } from '@/hooks/workout/useWorkoutActions';
+import { useRestTimer } from '@/hooks/workout/useRestTimer';
 
 import { WorkoutEditor } from '../components/workout/WorkoutEditor';
 import { ActiveWorkoutHeader } from '../components/workout/ActiveWorkoutHeader';
@@ -28,9 +26,15 @@ import { RenameWorkoutModal } from '../components/workout/Modals';
 export default function ActiveWorkoutScreen() {
   const router = useRouter();
   
-  // Store State & Actions
-  const activeWorkout = useWorkoutStore(state => state.activeWorkout);
+  // PERF: Use granular selectors — each selector only triggers a re-render
+  // when its specific slice of data changes, not the whole activeWorkout object.
+  const activeWorkoutId = useWorkoutStore(state => state.activeWorkout?.id);
+  const activeWorkoutTitle = useWorkoutStore(state => state.activeWorkout?.workoutTitle);
+  const exercises = useWorkoutStore(state => state.activeWorkout?.exercises ?? []);
+  const startTime = useWorkoutStore(state => state.activeWorkout?.startTime);
   const history = useWorkoutStore(state => state.history);
+
+  // Actions (stable references, never change)
   const addExerciseToActive = useWorkoutStore(state => state.addExerciseToActive);
   const addSetToExercise = useWorkoutStore(state => state.addSetToExercise);
   const updateSet = useWorkoutStore(state => state.updateSet);
@@ -45,12 +49,15 @@ export default function ActiveWorkoutScreen() {
   const renameWorkout = useWorkoutStore(state => state.renameWorkout);
   const setExercisesOrderInActive = useWorkoutStore(state => state.setExercisesOrderInActive);
   const removeSetFromExercise = useWorkoutStore(state => state.removeSetFromExercise);
-  const tickRestTimer = useWorkoutStore(state => state.tickRestTimer);
+  const startRestTimer = useWorkoutStore(state => state.startRestTimer);
+  const updateExerciseFocusMetric = useWorkoutStore(state => state.updateExerciseFocusMetric);
   
   // Custom Hooks
-  const elapsedTime = useActiveTimer(activeWorkout?.startTime);
+  const elapsedTime = useActiveTimer(startTime);
   const { lineTimers, startLineTimer, cancelLineTimer, adjustLineTimer, skipLineTimer } = useLineTimers();
   const { handleFinish, handleCancel } = useWorkoutActions();
+  // PERF: useRestTimer handles the 1s interval locally — does NOT write to the store every second.
+  const { remaining: restTimerRemaining, target: restTimerTarget, isActive: isRestTimerActive } = useRestTimer();
 
   // Local UI State
   const [restTimerVisible, setRestTimerVisible] = useState(false);
@@ -60,9 +67,8 @@ export default function ActiveWorkoutScreen() {
   // History Caching Logic
   const previousExerciseCache = useMemo(() => {
     const cache: Record<string, { sets: any[], unit: string }> = {};
-    if (!activeWorkout) return cache;
     
-    activeWorkout.exercises.forEach(ex => {
+    exercises.forEach((ex) => {
       if (!ex.exerciseId || cache[ex.exerciseId]) return;
       for (let i = 0; i < history.length; i++) {
         const prevEx = history[i].exercises.find(e => e.exerciseId === ex.exerciseId);
@@ -73,9 +79,9 @@ export default function ActiveWorkoutScreen() {
       }
     });
     return cache;
-  }, [activeWorkout?.exercises, history]);
+  }, [exercises, history]);
 
-  if (!activeWorkout) {
+  if (!activeWorkoutId) {
     return (
       <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
         <ThemedText type="headline" size={20}>No active workout.</ThemedText>
@@ -89,9 +95,9 @@ export default function ActiveWorkoutScreen() {
     );
   }
 
-  // Progress Calculation
-  const totalSets = activeWorkout.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => !s.isWarmUp).length, 0);
-  const completedSets = activeWorkout.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.done && !s.isWarmUp).length, 0);
+  // Progress Calculation (computed inline — no extra store reads)
+  const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.filter(s => !s.isWarmUp).length, 0);
+  const completedSets = exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.done && !s.isWarmUp).length, 0);
   const progressPct = totalSets > 0 ? (completedSets / totalSets) * 100 : 0;
 
   return (
@@ -103,8 +109,8 @@ export default function ActiveWorkoutScreen() {
       <SafeAreaView style={styles.safeArea}>
         <WorkoutEditor
           mode="active"
-          title={activeWorkout.workoutTitle}
-          exercises={activeWorkout.exercises}
+          title={activeWorkoutTitle ?? ''}
+          exercises={exercises}
           previousExerciseCache={previousExerciseCache}
           lineTimers={lineTimers}
           onLineTimerStart={startLineTimer}
@@ -123,21 +129,22 @@ export default function ActiveWorkoutScreen() {
             addNote: addExerciseNote,
             updateNote: updateExerciseNote,
             deleteNote: deleteExerciseNote,
-            updateTitle: () => setRenameModalVisible(true), // Trigger modal in active mode
+            updateTitle: () => setRenameModalVisible(true),
             toggleWarmUpSets: toggleWarmUpSets,
             updateWeightUnit: updateExerciseWeightUnit,
+            updateFocusMetric: updateExerciseFocusMetric,
           }}
           renderHeader={() => (
             <>
               <ActiveWorkoutHeader
                 elapsedTime={elapsedTime}
-                isRestTimerActive={activeWorkout.isRestTimerActive}
-                restTimerRemaining={activeWorkout.restTimerRemaining}
-                restTimerTarget={activeWorkout.restTimerTarget}
+                isRestTimerActive={isRestTimerActive}
+                restTimerRemaining={restTimerRemaining}
+                restTimerTarget={restTimerTarget}
                 onRestTimerPress={() => setRestTimerVisible(true)}
                 onFinishPress={handleFinish}
               />
-              {activeWorkout.exercises.length > 0 && (
+              {exercises.length > 0 && (
                 <WorkoutProgress progressPct={progressPct} />
               )}
             </>

@@ -15,6 +15,7 @@ import {
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { soundService } from '@/services/SoundService';
 import { ThemedText } from './ThemedText';
 import { GridBackground } from './VisualAccents';
 import { ExerciseDetailsModal } from './ExerciseDetailsModal';
@@ -67,6 +68,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
       newSet.delete(id);
     } else {
       newSet.add(id);
+      soundService.playSelectExercise();
     }
     setSelectedIds(newSet);
   };
@@ -95,6 +97,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
       id: 'custom_' + Date.now(),
       name: customName,
       category: customCategory,
+      exerciseType: 'weight_reps', // Default for custom exercises
       bodyPart: customBodyPart,
       frequency: 0,
       lastPerformed: ''

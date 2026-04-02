@@ -1,38 +1,39 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, TextInput, TouchableOpacity } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { styles } from './styles';
+import { SetData, ExerciseType } from '@/store/types';
 
 interface WorkoutSetRowProps {
   index: number;
   totalSets: number;
-  set: {
-    id: string;
-    weight: number;
-    reps: number;
-    done: boolean;
-    isWarmUp?: boolean;
-  };
+  exerciseType: ExerciseType;
+  set: SetData;
   previousText: string;
-  previousWeight: number;
-  previousReps: number;
-  isInvalid: { weight?: boolean; reps?: boolean };
+  previousWeight?: number;
+  previousReps?: number;
+  previousTime?: number;
+  isInvalid: { weight?: boolean; reps?: boolean; time?: boolean };
   showLineTimer: boolean;
   isTemplateMode?: boolean;
-  onUpdateSet: (data: { weight?: number; reps?: number }) => void;
+  onUpdateSet: (data: Partial<SetData>) => void;
   onToggleDone: () => void;
   onPreviousPress: () => void;
 }
 
-export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = ({
+// PERF: memo() prevents re-renders when sibling sets change —
+// this component only re-renders when its own set data changes.
+export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = memo(({
   index,
   totalSets,
+  exerciseType = 'weight_reps',
   set,
   previousText = '—',
   previousWeight = 0,
   previousReps = 0,
+  previousTime = 0,
   isInvalid = {},
   showLineTimer,
   isTemplateMode = false,
@@ -79,34 +80,55 @@ export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = ({
         </TouchableOpacity>
       </View>
 
-      <View style={styles.inputCell}>
-        <TextInput 
-          style={[
-            styles.miniInput, 
-            set.done && { color: Colors.primary },
-            isInvalid.weight && styles.inputInvalid
-          ]} 
-          keyboardType="numeric"
-          defaultValue={set.weight ? set.weight.toString() : ''}
-          placeholder={previousWeight > 0 ? previousWeight.toString() : "0"}
-          placeholderTextColor={Colors.outlineVariant}
-          onChangeText={(val) => onUpdateSet({ weight: Number(val) || 0 })}
-          editable={!set.done}
-        />
-      </View>
+      {exerciseType === 'weight_reps' && (
+        <View style={styles.inputCell}>
+          <TextInput 
+            style={[
+              styles.miniInput, 
+              set.done && { color: Colors.primary },
+              isInvalid.weight && styles.inputInvalid
+            ]} 
+            keyboardType="numeric"
+            defaultValue={set.weight !== undefined ? set.weight.toString() : ''}
+            placeholder={previousWeight > 0 ? previousWeight.toString() : "0"}
+            placeholderTextColor={Colors.outlineVariant}
+            onChangeText={(val) => onUpdateSet({ weight: Number(val) || 0 })}
+            editable={!set.done}
+          />
+        </View>
+      )}
+      
+      {exerciseType !== 'weight_reps' && (
+        <View style={{ flex: 1.5 }} />
+      )}
 
       <View style={styles.inputCell}>
         <TextInput 
           style={[
             styles.miniInput, 
             set.done && { color: Colors.primary },
-            isInvalid.reps && styles.inputInvalid
+            (isInvalid.reps || isInvalid.time) && styles.inputInvalid
           ]} 
           keyboardType="numeric"
-          defaultValue={set.reps ? set.reps.toString() : ''}
-          placeholder={previousReps > 0 ? previousReps.toString() : "0"}
+          defaultValue={
+            exerciseType === 'duration' 
+              ? (set.time !== undefined ? set.time.toString() : '') 
+              : (set.reps !== undefined ? set.reps.toString() : '')
+          }
+          placeholder={
+            exerciseType === 'duration' 
+              ? (previousTime > 0 ? `${previousTime}s` : "0s") 
+              : (previousReps > 0 ? previousReps.toString() : "0")
+          }
           placeholderTextColor={Colors.outlineVariant}
-          onChangeText={(val) => onUpdateSet({ reps: Number(val) || 0 })}
+          onChangeText={(val) => {
+            const num = Number(val) || 0;
+            if (exerciseType === 'duration') {
+              onUpdateSet({ time: num });
+            } else {
+              onUpdateSet({ reps: num });
+            }
+          }}
           editable={!set.done}
         />
       </View>
@@ -130,4 +152,6 @@ export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = ({
       )}
     </View>
   );
-};
+});
+
+WorkoutSetRow.displayName = 'WorkoutSetRow';

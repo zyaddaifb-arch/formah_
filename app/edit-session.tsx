@@ -9,7 +9,7 @@ import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { GridBackground, BlurGlow } from '@/components/VisualAccents';
 import { useWorkoutStore } from '@/store/workoutStore';
-import { WorkoutSession, Exercise, SetData } from '@/store/types';
+import { WorkoutSession, Exercise, SetData, FocusMetricType } from '@/store/types';
 import { WorkoutEditor } from '@/components/workout/WorkoutEditor';
 import { RenameWorkoutModal } from '@/components/workout/Modals';
 
@@ -215,6 +215,18 @@ export default function EditSessionScreen() {
           exercises: prev.exercises.map(ex => {
             if (ex.id !== exId) return ex;
             return { ...ex, weightUnit: unit };
+          })
+        };
+      });
+    },
+    updateFocusMetric: (exId: string, metric: FocusMetricType) => {
+      setSession(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          exercises: prev.exercises.map(ex => {
+            if (ex.id !== exId) return ex;
+            return { ...ex, focusMetric: metric };
           })
         };
       });

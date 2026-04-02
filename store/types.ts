@@ -1,7 +1,10 @@
+export type ExerciseType = 'weight_reps' | 'reps_only' | 'duration';
+
 export type SetData = {
   id: string;
-  weight: number;
-  reps: number;
+  weight?: number;
+  reps?: number;
+  time?: number; // In seconds
   done: boolean;
   isWarmUp?: boolean;
   note?: string;
@@ -15,6 +18,8 @@ export type ExerciseNote = {
   isSticky: boolean;
 };
 
+export type FocusMetricType = 'total_volume' | 'volume_increase' | 'total_reps' | 'weight_rep' | 'estimated_1rm';
+
 export type Exercise = {
   id: string;
   exerciseId?: string;
@@ -24,6 +29,8 @@ export type Exercise = {
   notes?: ExerciseNote[];
   warmUpSetsEnabled?: boolean;
   defaultRestTimer?: number; // In seconds
+  focusMetric?: FocusMetricType;
+  exerciseType?: ExerciseType;
 };
 
 export type WorkoutTemplate = {
@@ -54,9 +61,12 @@ export type ActiveWorkout = {
   exercises: Exercise[];
   
   // Rest Timer State
-  restTimerRemaining: number;
-  restTimerTarget: number;
+  // NOTE: restTimerEndTimestamp is the source of truth.
+  // restTimerRemaining is computed locally in UI hooks — NOT stored/ticked in the store.
+  restTimerEndTimestamp?: number; // Unix ms timestamp when timer should end
+  restTimerTarget: number;       // Duration in seconds
   isRestTimerActive: boolean;
+  restTimerRemaining: number;    // Kept for serialization compatibility but NOT ticked via store
 };
 
 export type WorkoutSession = {
@@ -77,6 +87,7 @@ export interface UserData {
 }
 
 export interface WorkoutState {
+  _hasHydrated: boolean;
   templates: WorkoutTemplate[];
   folders: WorkoutFolder[];
   history: WorkoutSession[];
@@ -96,6 +107,7 @@ export interface ExerciseActions {
   toggleWarmUpSets: (exerciseId: string) => void;
   updateExerciseWeightUnit: (exerciseId: string, unit: 'kg' | 'lb') => void;
   updateExerciseRestTimer: (exerciseId: string, seconds: number) => void;
+  updateExerciseFocusMetric: (exerciseId: string, metric: FocusMetricType) => void;
 }
 
 export interface SetActions {
@@ -148,10 +160,11 @@ export interface TemplateActions {
   duplicateTemplate: (id: string) => void;
   renameTemplate: (id: string, newName: string) => void;
   moveTemplate: (id: string, folderId?: string) => void;
+  updateDraftExerciseFocusMetric: (exerciseId: string, metric: FocusMetricType) => void;
 }
 
 export interface UserActions {
-  updateUser: (data: Partial<UserData>) => void;
+  updateUser: (data: Partial<UserData>, shouldSync?: boolean) => void;
   setWeightUnit: (unit: 'kg' | 'lb') => void;
   completeOnboarding: () => void;
 }
@@ -173,6 +186,7 @@ export type WorkoutStore = WorkoutState &
   TemplateActions &
   UserActions &
   FolderActions & {
+    setHasHydrated: (state: boolean) => void;
     reset: () => void;
   };
 
@@ -181,6 +195,7 @@ export type LibraryExercise = {
   id: string;
   name: string;
   category: string;
+  exerciseType: ExerciseType;
   bodyPart: string;
   image?: string;
   frequency?: number;

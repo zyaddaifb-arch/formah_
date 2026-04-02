@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { View, TouchableOpacity, TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
@@ -8,6 +8,7 @@ import { WorkoutSetRow } from './WorkoutSetRow';
 import { LineTimerIndicator } from './LineTimerIndicator';
 import { Exercise } from '@/store/types';
 import { useWorkoutStore } from '@/store/workoutStore';
+import { calculateFocusMetric } from '@/utils/focusMetricCalculator';
 import { styles } from './styles';
 
 interface ExerciseCardProps {
@@ -21,17 +22,20 @@ interface ExerciseCardProps {
   onCloseSwipeRow: () => void;
   onExerciseDetailPress: (name: string) => void;
   onExerciseMenuPress: (id: string) => void;
+  onSetFocusMetric: (id: string) => void;
   onUpdateNote: (noteId: string, text: string) => void;
   onDeleteNote: (noteId: string) => void;
-  onToggleSet: (setId: string, weight: number, reps: number, isDone: boolean) => void;
-  onUpdateSet: (setId: string, data: { weight?: number; reps?: number }) => void;
+  onToggleSet: (setId: string, weight?: number, reps?: number, time?: number, isDone?: boolean) => void;
+  onUpdateSet: (setId: string, data: Partial<import('@/store/types').SetData>) => void;
   onRemoveSet: (setId: string) => void;
   onAddSet: (isWarmUp: boolean) => void;
   onLineTimerPress: (setId: string) => void;
   isTemplateMode?: boolean;
 }
 
-export const ExerciseCard: React.FC<ExerciseCardProps> = ({
+// PERF: memo() prevents re-rendering all exercise cards when one exercise changes.
+// Each card only re-renders when its own `exercise` prop reference changes.
+export const ExerciseCard: React.FC<ExerciseCardProps> = memo(({
   exercise,
   condensed = false,
   previousData,
@@ -42,6 +46,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   onCloseSwipeRow,
   onExerciseDetailPress,
   onExerciseMenuPress,
+  onSetFocusMetric,
   onUpdateNote,
   onDeleteNote,
   onToggleSet,
@@ -54,11 +59,15 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
   const globalUnit = useWorkoutStore(state => state.user.weightUnit);
   const currentUnit = exercise.weightUnit || globalUnit;
 
+  const focusMetricValue = exercise.focusMetric
+    ? calculateFocusMetric(exercise.focusMetric, exercise.sets, previousData?.sets)
+    : 0;
+
   return (
     <View style={[styles.exerciseCard, condensed && styles.exerciseCardCondensed]}>
       <View style={[styles.exerciseHeader, condensed && { marginBottom: 0 }]}>
-        <TouchableOpacity 
-          style={styles.exerciseTitleArea} 
+        <TouchableOpacity
+          style={styles.exerciseTitleArea}
           onPress={() => onExerciseDetailPress(exercise.name)}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -66,13 +75,18 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
             {!condensed && <MaterialCommunityIcons name="help-circle-outline" size={20} color={Colors.onSurfaceVariant} />}
           </View>
         </TouchableOpacity>
-        
+
         {condensed ? (
           <MaterialCommunityIcons name="drag-vertical" size={24} color={Colors.onSurfaceVariant} />
         ) : (
-          <TouchableOpacity onPress={() => onExerciseMenuPress(exercise.id)}>
-            <MaterialCommunityIcons name="dots-vertical" size={24} color={Colors.primary} />
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+            <TouchableOpacity onPress={() => onSetFocusMetric(exercise.id)} style={{ padding: 4 }}>
+              <MaterialCommunityIcons name="chart-bar" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => onExerciseMenuPress(exercise.id)}>
+              <MaterialCommunityIcons name="dots-vertical" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
 
@@ -91,10 +105,10 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                   rowBackgroundColor="transparent"
                 >
                   <View style={note.isSticky ? styles.stickyNoteWrapper : null}>
-                    <TextInput 
+                    <TextInput
                       style={[styles.noteInput, note.isSticky && styles.stickyNoteInput]}
                       multiline
-                      placeholder={note.isSticky ? "Sticky note..." : "Add note..."}
+                      placeholder={note.isSticky ? 'Sticky note...' : 'Add note...'}
                       placeholderTextColor={note.isSticky ? 'rgba(27,27,27,0.4)' : 'rgba(225,228,249,0.3)'}
                       value={note.text}
                       onChangeText={(text) => onUpdateNote(note.id, text)}
@@ -109,15 +123,30 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
           <View style={styles.tableHeader}>
             <View style={{ flex: 1 }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>SET</ThemedText></View>
             {!isTemplateMode && <View style={{ flex: 2, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>PREVIOUS</ThemedText></View>}
-            <View style={{ flex: 2, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>WEIGHT ({currentUnit.toUpperCase()})</ThemedText></View>
-            <View style={{ flex: 1, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>REPS</ThemedText></View>
-            {!isTemplateMode && <View style={{ flex: 1, alignItems: 'flex-end' }}><MaterialCommunityIcons name="check" size={16} color={Colors.onSurfaceVariant}/></View>}
+
+            {exercise.exerciseType === 'weight_reps' && (
+              <View style={{ flex: 1.5, alignItems: 'center' }}>
+                <ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>WEIGHT ({currentUnit.toUpperCase()})</ThemedText>
+              </View>
+            )}
+
+            {exercise.exerciseType !== 'weight_reps' && (
+              <View style={{ flex: 1.5 }} />
+            )}
+
+            <View style={{ flex: 1.5, alignItems: 'center' }}>
+              <ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>
+                {exercise.exerciseType === 'duration' ? 'TIME' : 'REPS'}
+              </ThemedText>
+            </View>
+
+            {!isTemplateMode && <View style={{ flex: 1, alignItems: 'flex-end' }}><MaterialCommunityIcons name="check" size={16} color={Colors.onSurfaceVariant} /></View>}
           </View>
 
           <View style={styles.setsList}>
             {exercise.sets.map((set, setIdx) => {
               const isWarmUp = set.isWarmUp;
-              let prevSetItem = null;
+              let prevSetItem: any = null;
               let prevSetUnit = 'kg';
 
               if (previousData) {
@@ -139,8 +168,21 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                 }
               }
 
-              const prevText = convertedPrevWeight > 0 && prevSetItem ? `${convertedPrevWeight} ${currentUnit} × ${prevSetItem.reps}` : '—';
-              
+              let prevText = '—';
+              if (prevSetItem) {
+                if (exercise.exerciseType === 'weight_reps') {
+                  const w = convertedPrevWeight > 0 ? `${convertedPrevWeight}${currentUnit}` : '0';
+                  prevText = `${w} × ${prevSetItem.reps || 0}`;
+                } else if (exercise.exerciseType === 'reps_only') {
+                  prevText = `${prevSetItem.reps || 0} reps`;
+                } else if (exercise.exerciseType === 'duration') {
+                  prevText = `${prevSetItem.time || 0}s`;
+                } else {
+                  const w = convertedPrevWeight > 0 ? `${convertedPrevWeight}${currentUnit}` : '0';
+                  prevText = `${w} × ${prevSetItem.reps || 0}`;
+                }
+              }
+
               const lineTimer = lineTimers[set.id];
               const showLineTimer = !!lineTimer;
 
@@ -157,19 +199,25 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
                       <WorkoutSetRow
                         index={setIdx}
                         totalSets={exercise.sets.length}
+                        exerciseType={exercise.exerciseType || 'weight_reps'}
                         set={set}
                         previousText={prevText}
                         previousWeight={convertedPrevWeight}
-                        previousReps={prevSetItem?.reps || 0}
+                        previousReps={prevSetItem?.reps}
+                        previousTime={prevSetItem?.time}
                         isInvalid={invalidSets[set.id] || {}}
                         showLineTimer={showLineTimer}
                         isTemplateMode={isTemplateMode}
                         onUpdateSet={(data) => onUpdateSet(set.id, data)}
-                        onToggleDone={() => onToggleSet(set.id, set.weight, set.reps, set.done)}
+                        onToggleDone={() => onToggleSet(set.id, set.weight, set.reps, set.time, set.done)}
                         onPreviousPress={() => {
-                            if (prevSetItem && !set.done && convertedPrevWeight > 0) {
-                                onUpdateSet(set.id, { weight: convertedPrevWeight, reps: prevSetItem.reps });
-                            }
+                          if (prevSetItem && !set.done) {
+                            onUpdateSet(set.id, {
+                              weight: convertedPrevWeight,
+                              reps: prevSetItem.reps,
+                              time: prevSetItem.time,
+                            });
+                          }
                         }}
                       />
                       {showLineTimer && (
@@ -197,4 +245,6 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
       )}
     </View>
   );
-};
+});
+
+ExerciseCard.displayName = 'ExerciseCard';

@@ -22,7 +22,10 @@
         "backgroundColor": "#090e1c"
       },
       "package": "com.zyaddaif.formah",
-      "permissions": ["CAMERA_ROLL", "CAMERA"],
+      "permissions": [
+        "CAMERA_ROLL",
+        "CAMERA"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
@@ -43,7 +46,8 @@
           "photosPermission": "Allow Formah to access your photos to change your profile picture.",
           "cameraPermission": "Allow Formah to access your camera."
         }
-      ]
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true,

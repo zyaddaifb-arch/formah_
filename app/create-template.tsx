@@ -32,7 +32,7 @@ export default function CreateTemplateScreen() {
   const cancelTemplateCreation = useWorkoutStore(state => state.cancelTemplateCreation);
   const folders = useWorkoutStore(state => state.folders);
   const updateDraftTemplate = useWorkoutStore(state => state.updateDraftTemplate);
-
+  const updateDraftExerciseFocusMetric = useWorkoutStore(state => state.updateDraftExerciseFocusMetric);
 
   useEffect(() => {
     startTemplateCreation(templateId, folderId);
@@ -136,6 +136,7 @@ export default function CreateTemplateScreen() {
                 updateNote: (exId: string, noteId: string, text: string) => useWorkoutStore.getState().updateDraftExerciseNote(exId, noteId, text),
                 deleteNote: (exId: string, noteId: string) => useWorkoutStore.getState().deleteDraftExerciseNote(exId, noteId),
                 updateTitle: updateDraftTemplateName,
+                updateFocusMetric: updateDraftExerciseFocusMetric,
             }}
         />
       </SafeAreaView>

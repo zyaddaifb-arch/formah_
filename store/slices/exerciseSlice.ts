@@ -1,5 +1,6 @@
 import { StateCreator } from 'zustand';
-import { WorkoutStore, Exercise, ExerciseNote, SetData } from '../types';
+import { WorkoutStore, Exercise, ExerciseNote, SetData, FocusMetricType, ExerciseType } from '../types';
+import { EXERCISE_LIBRARY } from '../exerciseLibrary';
 
 export interface ExerciseSlice {
   addExerciseToActive: (exerciseId: string, exerciseName: string) => void;
@@ -12,6 +13,7 @@ export interface ExerciseSlice {
   toggleWarmUpSets: (exerciseId: string) => void;
   updateExerciseWeightUnit: (exerciseId: string, unit: 'kg' | 'lb') => void;
   updateExerciseRestTimer: (exerciseId: string, seconds: number) => void;
+  updateExerciseFocusMetric: (exerciseId: string, metric: FocusMetricType) => void;
 }
 
 export const createExerciseSlice: StateCreator<WorkoutStore, [], [], ExerciseSlice> = (set, get) => ({
@@ -38,14 +40,24 @@ export const createExerciseSlice: StateCreator<WorkoutStore, [], [], ExerciseSli
       }
     }
 
+    const libraryExercise = EXERCISE_LIBRARY.find(ex => ex.id === exerciseId);
+    const exerciseType: ExerciseType = libraryExercise?.exerciseType || 'weight_reps';
+
     if (initialSets.length === 0) {
-      initialSets = [{ id: uniqueId + '_1', weight: 0, reps: 0, done: false }];
+      initialSets = [{ 
+        id: uniqueId + '_1', 
+        weight: exerciseType === 'weight_reps' ? 0 : undefined, 
+        reps: exerciseType !== 'duration' ? 0 : undefined,
+        time: exerciseType === 'duration' ? 0 : undefined,
+        done: false 
+      }];
     }
 
     const newExercise: Exercise = {
       id: uniqueId,
       exerciseId,
       name: exerciseName,
+      exerciseType,
       sets: initialSets,
       weightUnit: get().user.weightUnit,
       notes: [],
@@ -93,8 +105,17 @@ export const createExerciseSlice: StateCreator<WorkoutStore, [], [], ExerciseSli
         }
     }
 
+    const libraryExercise = EXERCISE_LIBRARY.find(ex => ex.id === newExerciseId);
+    const exerciseType: ExerciseType = libraryExercise?.exerciseType || 'weight_reps';
+
     if (initialSets.length === 0) {
-      initialSets = [{ id: uniqueId + '_1', weight: 0, reps: 0, done: false }];
+      initialSets = [{ 
+        id: uniqueId + '_1', 
+        weight: exerciseType === 'weight_reps' ? 0 : undefined,
+        reps: exerciseType !== 'duration' ? 0 : undefined,
+        time: exerciseType === 'duration' ? 0 : undefined,
+        done: false 
+      }];
     }
 
     set({
@@ -106,6 +127,7 @@ export const createExerciseSlice: StateCreator<WorkoutStore, [], [], ExerciseSli
               id: ex.id,
               exerciseId: newExerciseId,
               name: newExerciseName,
+              exerciseType,
               sets: initialSets,
               weightUnit: get().user.weightUnit,
               notes: [],
@@ -225,7 +247,7 @@ export const createExerciseSlice: StateCreator<WorkoutStore, [], [], ExerciseSli
 
             const convertedSets = ex.sets.map(s => ({
               ...s,
-              weight: s.weight > 0 ? parseFloat((s.weight * conversionFactor).toFixed(1)) : s.weight
+              weight: (s.weight !== undefined && s.weight > 0) ? parseFloat((s.weight * conversionFactor).toFixed(1)) : s.weight
             }));
 
             return { ...ex, weightUnit: unit, sets: convertedSets };
@@ -245,6 +267,22 @@ export const createExerciseSlice: StateCreator<WorkoutStore, [], [], ExerciseSli
         exercises: activeWorkout.exercises.map(ex => {
           if (ex.id === exerciseId) {
             return { ...ex, defaultRestTimer: seconds };
+          }
+          return ex;
+        })
+      }
+    });
+  },
+
+  updateExerciseFocusMetric: (exerciseId, metric) => {
+    const { activeWorkout } = get();
+    if (!activeWorkout) return;
+    set({
+      activeWorkout: {
+        ...activeWorkout,
+        exercises: activeWorkout.exercises.map(ex => {
+          if (ex.id === exerciseId) {
+            return { ...ex, focusMetric: metric };
           }
           return ex;
         })

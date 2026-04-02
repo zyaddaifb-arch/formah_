@@ -3,19 +3,21 @@ import { WorkoutStore, UserData } from '../types';
 import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 export interface UserSlice {
-  updateUser: (data: Partial<UserData>) => void;
+  updateUser: (data: Partial<UserData>, shouldSync?: boolean) => void;
   setWeightUnit: (unit: 'kg' | 'lb') => void;
   completeOnboarding: () => void;
 }
 
 export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (set) => ({
-  updateUser: (data) => {
+  updateUser: (data, shouldSync = true) => {
     set((state) => {
       const user = { ...state.user, ...data };
-      SupabaseSyncService.queueMutation('profiles', 'UPDATE', {
-        full_name: user.name,
-        avatar_url: user.avatarUri,
-      });
+      if (shouldSync) {
+        SupabaseSyncService.queueMutation('profiles', 'UPDATE', {
+          full_name: user.name,
+          avatar_url: user.avatarUri,
+        });
+      }
       return { user };
     });
   },
