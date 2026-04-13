@@ -13,6 +13,7 @@ interface ActiveWorkoutHeaderProps {
   restTimerTarget: number;
   onRestTimerPress: () => void;
   onFinishPress: () => void;
+  onMinimizePress: () => void;
 }
 
 export const ActiveWorkoutHeader: React.FC<ActiveWorkoutHeaderProps> = ({
@@ -22,10 +23,15 @@ export const ActiveWorkoutHeader: React.FC<ActiveWorkoutHeaderProps> = ({
   restTimerTarget,
   onRestTimerPress,
   onFinishPress,
+  onMinimizePress,
 }) => {
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>
+        <TouchableOpacity style={styles.minimizeBtn} onPress={onMinimizePress}>
+          <MaterialCommunityIcons name="chevron-down" size={28} color={Colors.primary} />
+        </TouchableOpacity>
+
         <TouchableOpacity 
           style={[styles.restTimer, { overflow: 'hidden' }]} 
           onPress={onRestTimerPress}

@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, WorkoutFolder } from '../types';
 import { SupabaseSyncService } from '@/services/SupabaseSyncService';
+import { generateUUID } from '@/utils/uuid';
 
 export interface FolderSlice {
   createFolder: (name: string) => void;
@@ -14,7 +15,7 @@ export interface FolderSlice {
 export const createFolderSlice: StateCreator<WorkoutStore, [], [], FolderSlice> = (set, get) => ({
   createFolder: (name) => {
     const newFolder: WorkoutFolder = {
-      id: 'folder_' + Date.now(),
+      id: generateUUID(),
       name,
       templateIds: [],
       createdAt: Date.now(),

@@ -1,0 +1,20 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:8081",
+  "loginUser": "formah@gmail.com",
+  "loginPassword": "123321",
+  "executionArgs": {
+    "projectName": "formah_",
+    "projectPath": "c:\\formah_",
+    "testIds": [],
+    "additionalInstruction": "",
+    "serverMode": "development",
+    "envs": {
+      "API_KEY": "sk-user-zkMoZ2a_bYyh7jbGJjIIVMVgfsq34m-8NAlFhujLb_5LExZkDkVoEK9n90dq5tMLU8eW7qwowoBMUWnu-VC3meTQyjpLI8Zq7yBwy-Zn5I-cMLricp01KAEVBsVcXGEJ5Rk"
+    }
+  },
+  "serverPort": 52907,
+  "proxy": "http://f24cbc3d-6570-4eb6-91b4-11abe1721586:iqfoCVD552DO9foCWUXkmxE0iSOzceAx@tun.testsprite.com:8080"
+}

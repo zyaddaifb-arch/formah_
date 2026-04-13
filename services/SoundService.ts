@@ -1,4 +1,4 @@
-import { Audio } from 'expo-av';
+import { createAudioPlayer } from 'expo-audio';
 import * as Haptics from 'expo-haptics';
 
 const SOUND_ASSETS = {
@@ -6,10 +6,10 @@ const SOUND_ASSETS = {
   remove_set: require('../assets/sounds/remove_set.mp3'),
   select_exercise: require('../assets/sounds/select_exercise.mp3'),
   done_set: require('../assets/sounds/done_set.mp3'),
-};
+} as const;
 
 class SoundService {
-  private sounds: Record<string, Audio.Sound> = {};
+  private sounds: Record<string, ReturnType<typeof createAudioPlayer>> = {};
   private isLoading: boolean = false;
 
   async init() {
@@ -18,8 +18,7 @@ class SoundService {
 
     try {
       for (const [key, asset] of Object.entries(SOUND_ASSETS)) {
-        const { sound } = await Audio.Sound.createAsync(asset);
-        this.sounds[key] = sound;
+        this.sounds[key] = createAudioPlayer(asset);
       }
     } catch (error) {
       console.error('Failed to load sounds:', error);
@@ -32,7 +31,8 @@ class SoundService {
     try {
       const sound = this.sounds[name];
       if (sound) {
-        await sound.replayAsync();
+        await sound.seekTo(0);
+        sound.play();
       }
       if (hapticType) {
         if (Object.values(Haptics.NotificationFeedbackType).includes(hapticType as any)) {
@@ -65,7 +65,7 @@ class SoundService {
   // Cleanup method if needed
   async unloadAll() {
     for (const sound of Object.values(this.sounds)) {
-      await sound.unloadAsync();
+      sound.remove();
     }
     this.sounds = {};
   }

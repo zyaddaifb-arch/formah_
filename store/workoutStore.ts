@@ -25,6 +25,8 @@ export const useWorkoutStore = create<WorkoutStore>()(
         avatarUri: null,
         weightUnit: 'lb',
         hasSeenOnboarding: false,
+        isRestTimerEnabled: true,
+        defaultRestTimer: 90, // default 1:30
       },
       ...createExerciseSlice(set, get, store),
       ...createSetSlice(set, get, store),
@@ -44,6 +46,8 @@ export const useWorkoutStore = create<WorkoutStore>()(
           avatarUri: null,
           weightUnit: 'lb',
           hasSeenOnboarding: false,
+          isRestTimerEnabled: true,
+          defaultRestTimer: 90, // default 1:30
         },
       }),
     }),

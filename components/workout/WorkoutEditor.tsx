@@ -5,6 +5,7 @@ import { View, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-nati
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/services/SoundService';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
@@ -84,6 +85,8 @@ export function WorkoutEditor({
   const [invalidSets, setInvalidSets] = useState<Record<string, { weight?: boolean; reps?: boolean }>>({});
   const [tempWarmUpCount, setTempWarmUpCount] = useState(2);
 
+  const keyboardHeight = useKeyboardHeight();
+
   // PERF: useCallback gives this function a stable identity so it doesn't cause
   // renderExercise (and all ExerciseCards) to re-render when unrelated state changes.
   const handleToggleSetInternal = useCallback((exercise: Exercise, setId: string, weight?: number, reps?: number, time?: number, isDone?: boolean) => {
@@ -98,10 +101,17 @@ export function WorkoutEditor({
     let isValid = true;
     const currentInvalidState: { weight?: boolean; reps?: boolean } = {};
 
-    if (exercise.exerciseType === 'duration') {
+    const type = exercise.exerciseType || 'weight_reps';
+
+    if (type === 'duration') {
       if ((time ?? 0) <= 0) isValid = false;
-    } else if (exercise.exerciseType === 'reps_only') {
+    } else if (type === 'reps_only') {
       if ((reps ?? 0) <= 0) isValid = false;
+    } else if (type === 'weight_only') {
+      if ((weight ?? 0) <= 0) {
+        isValid = false;
+        currentInvalidState.weight = true;
+      }
     } else {
       if ((weight ?? 0) <= 0) {
           isValid = false;
@@ -177,7 +187,8 @@ export function WorkoutEditor({
 
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
+      {renderHeader?.()}
       <DraggableFlatList
         data={exercises}
         keyExtractor={(item) => item.id}
@@ -186,11 +197,12 @@ export function WorkoutEditor({
           actions.reorderExercises(data);
           setIsReordering(false);
         }}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 + (keyboardHeight ? 48 : 0) }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        automaticallyAdjustKeyboardInsets={true}
         ListHeaderComponent={
           <>
-            {renderHeader?.()}
             <View style={styles.titleSection}>
                 {mode === 'template' ? (
                   <TextInput
@@ -343,7 +355,7 @@ export function WorkoutEditor({
         previousSets={previousExerciseCache[(exercises.find(e => e.id === focusMetricExerciseId)?.exerciseId || '')]?.sets}
         unit={(exercises.find(e => e.id === focusMetricExerciseId)?.weightUnit as 'kg' | 'lb') || 'kg'}
       />
-    </>
+    </View>
   );
 }
 

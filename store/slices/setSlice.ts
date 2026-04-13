@@ -153,11 +153,12 @@ export const createSetSlice: StateCreator<WorkoutStore, [], [], SetSlice> = (set
         ...ex,
         sets: ex.sets.map((s) => {
           const isWeightRepsValid = ex.exerciseType === 'weight_reps' && (s.weight ?? 0) > 0 && (s.reps ?? 0) > 0;
+          const isWeightOnlyValid = ex.exerciseType === 'weight_only' && (s.weight ?? 0) > 0;
           const isRepsOnlyValid = ex.exerciseType === 'reps_only' && (s.reps ?? 0) > 0;
           const isDurationValid = ex.exerciseType === 'duration' && (s.time ?? 0) > 0;
           const isLegacyValid = !ex.exerciseType && (s.weight ?? 0) > 0 && (s.reps ?? 0) > 0;
 
-          if (!s.done && (isWeightRepsValid || isRepsOnlyValid || isDurationValid || isLegacyValid)) {
+          if (!s.done && (isWeightRepsValid || isWeightOnlyValid || isRepsOnlyValid || isDurationValid || isLegacyValid)) {
             return { ...s, done: true };
           }
           return s;

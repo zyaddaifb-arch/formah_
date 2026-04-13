@@ -63,6 +63,8 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = memo(({
     ? calculateFocusMetric(exercise.focusMetric, exercise.sets, previousData?.sets)
     : 0;
 
+  const type = exercise.exerciseType || 'weight_reps';
+
   return (
     <View style={[styles.exerciseCard, condensed && styles.exerciseCardCondensed]}>
       <View style={[styles.exerciseHeader, condensed && { marginBottom: 0 }]}>
@@ -124,21 +126,27 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = memo(({
             <View style={{ flex: 1 }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>SET</ThemedText></View>
             {!isTemplateMode && <View style={{ flex: 2, alignItems: 'center' }}><ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>PREVIOUS</ThemedText></View>}
 
-            {exercise.exerciseType === 'weight_reps' && (
+            {type === 'weight_reps' || type === 'weight_only' ? (
               <View style={{ flex: 1.5, alignItems: 'center' }}>
                 <ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>WEIGHT ({currentUnit.toUpperCase()})</ThemedText>
               </View>
-            )}
+            ) : null}
 
-            {exercise.exerciseType !== 'weight_reps' && (
+            {type === 'duration' || type === 'reps_only' ? (
+              <View style={{ flex: 1.5 }} />
+            ) : null}
+
+            {type !== 'weight_only' && (
+              <View style={{ flex: 1.5, alignItems: 'center' }}>
+                <ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>
+                  {type === 'duration' ? 'TIME' : 'REPS'}
+                </ThemedText>
+              </View>
+            )}
+            
+            {type === 'weight_only' && (
               <View style={{ flex: 1.5 }} />
             )}
-
-            <View style={{ flex: 1.5, alignItems: 'center' }}>
-              <ThemedText type="label" size={8} color={Colors.onSurfaceVariant}>
-                {exercise.exerciseType === 'duration' ? 'TIME' : 'REPS'}
-              </ThemedText>
-            </View>
 
             {!isTemplateMode && <View style={{ flex: 1, alignItems: 'flex-end' }}><MaterialCommunityIcons name="check" size={16} color={Colors.onSurfaceVariant} /></View>}
           </View>
@@ -170,16 +178,15 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = memo(({
 
               let prevText = '—';
               if (prevSetItem) {
-                if (exercise.exerciseType === 'weight_reps') {
-                  const w = convertedPrevWeight > 0 ? `${convertedPrevWeight}${currentUnit}` : '0';
-                  prevText = `${w} × ${prevSetItem.reps || 0}`;
-                } else if (exercise.exerciseType === 'reps_only') {
+                if (type === 'weight_reps') {
+                  const w = convertedPrevWeight > 0 ? `${convertedPrevWeight}${currentUnit}` : '';
+                  prevText = w ? `${w} × ${prevSetItem.reps || 0}` : `${prevSetItem.reps || 0} reps`;
+                } else if (type === 'reps_only') {
                   prevText = `${prevSetItem.reps || 0} reps`;
-                } else if (exercise.exerciseType === 'duration') {
+                } else if (type === 'duration') {
                   prevText = `${prevSetItem.time || 0}s`;
-                } else {
-                  const w = convertedPrevWeight > 0 ? `${convertedPrevWeight}${currentUnit}` : '0';
-                  prevText = `${w} × ${prevSetItem.reps || 0}`;
+                } else if (type === 'weight_only') {
+                  prevText = convertedPrevWeight > 0 ? `${convertedPrevWeight}${currentUnit}` : '—';
                 }
               }
 
@@ -199,7 +206,7 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = memo(({
                       <WorkoutSetRow
                         index={setIdx}
                         totalSets={exercise.sets.length}
-                        exerciseType={exercise.exerciseType || 'weight_reps'}
+                        exerciseType={type}
                         set={set}
                         previousText={prevText}
                         previousWeight={convertedPrevWeight}

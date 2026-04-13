@@ -1,0 +1,1409 @@
+[
+  {
+    "id": "TC001",
+    "title": "Onboarding completes and routes to authentication",
+    "description": "Verifies the onboarding introduction can be completed and the user is routed to the authentication screen.",
+    "category": "Onboarding",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Log out if a logged-in session is present and the app allows logging out from this screen"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to the app entry experience"
+      },
+      {
+        "type": "action",
+        "description": "Advance through the introduction steps until completion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the authentication screen is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Onboarding remote resource fallback and retry path",
+    "description": "Verifies onboarding shows fallback content and a retry option when an introduction resource fails, then allows completion to authentication.",
+    "category": "Onboarding",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to the app entry experience"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the introduction content to load"
+      },
+      {
+        "type": "action",
+        "description": "If a loading failure state is shown, click the retry option"
+      },
+      {
+        "type": "action",
+        "description": "Advance through the introduction steps until completion"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the authentication screen is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Authentication screen loads primary content",
+    "description": "Verifies the authentication screen loads and shows the primary login form controls.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login inputs are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Login with valid credentials routes to home",
+    "description": "Verifies a user can log in with valid credentials and land on the home dashboard.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user lands on the home dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Login with invalid credentials shows error and stays on auth",
+    "description": "Verifies invalid login attempts show an authentication error and do not navigate away from the auth screen.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill invalid_user@example.com into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill wrong_password into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an authentication error message is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the authentication screen is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Signup creates account and routes to home",
+    "description": "Verifies a user can switch to signup, register a new account, and be routed to the home dashboard.",
+    "category": "Authentication",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Switch to the signup mode"
+      },
+      {
+        "type": "action",
+        "description": "Fill a new unique email into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid password into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the signup form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user lands on the home dashboard"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Reset password request for existing account shows confirmation and returns to auth",
+    "description": "Verifies the reset password flow accepts an email, shows a confirmation, and returns to the authentication screen.",
+    "category": "Authentication",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Start the reset password flow"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the reset password request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a password reset confirmation is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the authentication screen is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Reset password request for unknown email shows error and stays in reset flow",
+    "description": "Verifies the reset password flow shows an error for an unknown email and does not proceed to confirmation.",
+    "category": "Authentication",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Start the reset password flow"
+      },
+      {
+        "type": "action",
+        "description": "Fill unknown_user@example.com into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the reset password request"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an error indicating no account found is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the reset password screen remains displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Create and save a workout template with exercises and focus metrics",
+    "description": "Verifies a logged-in user can create a workout template by adding exercises, assigning focus metrics, and saving successfully.",
+    "category": "Workout Creation & Templates",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation option to create a new workout template"
+      },
+      {
+        "type": "action",
+        "description": "Fill a template name into the template name field"
+      },
+      {
+        "type": "action",
+        "description": "Add an exercise to the template"
+      },
+      {
+        "type": "action",
+        "description": "Select a primary focus metric for the exercise"
+      },
+      {
+        "type": "action",
+        "description": "Save the template"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a success confirmation is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Saving a template with no exercises shows validation error",
+    "description": "Verifies the template form blocks saving when no exercises are defined and shows a validation error.",
+    "category": "Workout Creation & Templates",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /create-template"
+      },
+      {
+        "type": "action",
+        "description": "Fill a template name into the template name field"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to save the template"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a validation error indicating at least one exercise is required is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the create template screen remains displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "End-to-end: save template then start active workout, log sets, and finish to summary",
+    "description": "Verifies a user can create a template, start an active workout from it, log set data, and finish to the summary screen.",
+    "category": "Workout Creation & Templates",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /create-template"
+      },
+      {
+        "type": "action",
+        "description": "Fill a template name into the template name field"
+      },
+      {
+        "type": "action",
+        "description": "Add an exercise to the template"
+      },
+      {
+        "type": "action",
+        "description": "Select a primary focus metric for the exercise"
+      },
+      {
+        "type": "action",
+        "description": "Save the template"
+      },
+      {
+        "type": "action",
+        "description": "Click the option to start a workout from the saved template"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid weight into the weight field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid reps count into the reps field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Log the set"
+      },
+      {
+        "type": "action",
+        "description": "Finish the workout session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the workout summary screen is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Complete an active workout session end-to-end to summary",
+    "description": "Verifies a user can start an active workout, log at least one set, manage rest, and finish to reach the summary screen.",
+    "category": "Active Workout (Live Tracking)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric weight into the weight field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric reps value into the reps field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Submit the set entry"
+      },
+      {
+        "type": "action",
+        "description": "Start the rest timer"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the rest timer to be in a running state"
+      },
+      {
+        "type": "action",
+        "description": "Finish the workout session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the workout summary screen is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify completed set details are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Validate set logging rejects non-numeric weight and allows correction",
+    "description": "Verifies invalid set input shows a validation error and the user can correct it to continue logging.",
+    "category": "Active Workout (Live Tracking)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Fill non-numeric text into the weight field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric reps value into the reps field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Submit the set entry"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a set input validation error is visible"
+      },
+      {
+        "type": "action",
+        "description": "Replace the weight value with a valid numeric weight"
+      },
+      {
+        "type": "action",
+        "description": "Submit the set entry"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the set is added to the logged sets list"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Edit an exercise during an active session and still finish to summary",
+    "description": "Verifies the user can modify an exercise mid-session, continue logging, and complete the workout to reach the summary.",
+    "category": "Active Workout (Live Tracking)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Open the exercise edit controls for an exercise in the session"
+      },
+      {
+        "type": "action",
+        "description": "Adjust the planned reps target to a different valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save the exercise changes"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric weight into the weight field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric reps value into the reps field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Submit the set entry"
+      },
+      {
+        "type": "action",
+        "description": "Finish the workout session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the workout summary screen is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the summary includes the logged set details"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Rest timer can be paused and resumed during an active workout",
+    "description": "Verifies the rest timer controls work during a session and remain usable after toggling state.",
+    "category": "Active Workout (Live Tracking)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Start the rest timer"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the rest timer to be in a running state"
+      },
+      {
+        "type": "action",
+        "description": "Pause the rest timer"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the rest timer to be in a paused state"
+      },
+      {
+        "type": "action",
+        "description": "Resume the rest timer"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the rest timer is in a running state"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Remove an exercise during an active session and continue logging",
+    "description": "Verifies an exercise can be removed mid-session and the session remains usable for remaining exercises.",
+    "category": "Active Workout (Live Tracking)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Open the exercise edit controls for an exercise in the session"
+      },
+      {
+        "type": "action",
+        "description": "Remove the exercise from the session"
+      },
+      {
+        "type": "action",
+        "description": "Confirm the removal within the app UI if prompted"
+      },
+      {
+        "type": "action",
+        "description": "Select a remaining exercise in the session"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric weight into the weight field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric reps value into the reps field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Submit the set entry"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the set is added for the remaining exercise"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the removed exercise is no longer displayed in the session"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Workout summary displays key metrics after finishing a workout",
+    "description": "Verifies the summary shows set-level details and aggregate metrics after completing a workout.",
+    "category": "Workout Summary",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric weight into the weight field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric reps value into the reps field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Submit the set entry"
+      },
+      {
+        "type": "action",
+        "description": "Finish the workout session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify total volume is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify set-level details are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Dismiss workout summary and return to main app experience",
+    "description": "Verifies the user can dismiss the summary screen after a workout and continue using the app.",
+    "category": "Workout Summary",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric weight into the weight field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Fill a valid numeric reps value into the reps field for the current set"
+      },
+      {
+        "type": "action",
+        "description": "Submit the set entry"
+      },
+      {
+        "type": "action",
+        "description": "Finish the workout session"
+      },
+      {
+        "type": "action",
+        "description": "Dismiss the workout summary"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the user lands on the main dashboard or primary tab view"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Workout summary handles finishing with no logged sets",
+    "description": "Verifies that completing a workout without logged sets results in an empty or partial summary with guidance.",
+    "category": "Workout Summary",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the control to start an active workout session"
+      },
+      {
+        "type": "action",
+        "description": "Start a workout session from an available template or default option"
+      },
+      {
+        "type": "action",
+        "description": "Finish the workout session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify an empty or partial session summary is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify guidance to log more workout data is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "History page loads with previous workouts and calendar view",
+    "description": "Verifies the History tab loads its primary content and allows selecting a workout to view details.",
+    "category": "History & Performance Analysis",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation control to open workout history"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a list of previous workouts is displayed"
+      },
+      {
+        "type": "action",
+        "description": "Select a workout from the history list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify detailed session data and performance graphs are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "History time range selection updates graphs or shows insufficient-data message",
+    "description": "Verifies selecting different time ranges results in either displayed insights or an insufficient-data message based on what the UI provides.",
+    "category": "History & Performance Analysis",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation control to open workout history"
+      },
+      {
+        "type": "action",
+        "description": "Open the time range selector"
+      },
+      {
+        "type": "action",
+        "description": "Select a different valid time range option"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify performance graphs and insights are displayed or an insufficient-data message is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Update profile details and save successfully",
+    "description": "Verifies a signed-in user can update profile details/preferences and save changes with a visible confirmation.",
+    "category": "Profile & Settings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation entry to open the profile screen"
+      },
+      {
+        "type": "action",
+        "description": "Update a profile detail field with a new valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a success confirmation is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC023",
+    "title": "Profile validation prevents saving invalid data",
+    "description": "Verifies invalid profile data shows a validation error and the user remains on the profile screen.",
+    "category": "Profile & Settings",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation entry to open the profile screen"
+      },
+      {
+        "type": "action",
+        "description": "Fill invalid text into a required profile field"
+      },
+      {
+        "type": "action",
+        "description": "Save changes"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a validation error is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the profile screen is still displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC024",
+    "title": "Profile screen loads primary content",
+    "description": "Verifies the profile screen loads and displays primary profile/settings content for a signed-in user.",
+    "category": "Profile & Settings",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /profile"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify profile details and settings controls are displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC025",
+    "title": "Home shows weekly plan and streak status",
+    "description": "Verifies the home dashboard displays the weekly plan and current streak status for a signed-in user.",
+    "category": "Smart Streak System",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /home"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the current weekly plan is displayed"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the streak status is displayed"
+      }
+    ]
+  },
+  {
+    "id": "TC026",
+    "title": "Complete a workout and see streak reflected on home",
+    "description": "Verifies completing a logged workout session updates the streak display when returning to home.",
+    "category": "Smart Streak System",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /home"
+      },
+      {
+        "type": "action",
+        "description": "Click the action to start a required workout from the weekly plan"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the active workout screen to load"
+      },
+      {
+        "type": "action",
+        "description": "Log at least one set in the active workout"
+      },
+      {
+        "type": "action",
+        "description": "End the workout session"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the summary screen to load"
+      },
+      {
+        "type": "action",
+        "description": "Click the navigation entry to return to the home screen"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the streak status reflects the newly logged workout"
+      }
+    ]
+  },
+  {
+    "id": "TC027",
+    "title": "At-risk streak shows prioritization guidance",
+    "description": "Verifies the home screen can surface guidance to prioritize important workouts when the streak is at risk.",
+    "category": "Smart Streak System",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /home"
+      },
+      {
+        "type": "action",
+        "description": "Scroll through the weekly plan and streak area"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify prioritization guidance is displayed when the streak is at risk"
+      }
+    ]
+  },
+  {
+    "id": "TC028",
+    "title": "Optional workout cannot be marked complete without a logged session",
+    "description": "Verifies attempting to mark an optional workout complete without logging shows guidance that only logged workouts count.",
+    "category": "Smart Streak System",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /home"
+      },
+      {
+        "type": "action",
+        "description": "Click an optional workout in the weekly plan"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to mark the optional workout complete without starting a session"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify guidance is displayed that only logged workouts count toward streaks"
+      }
+    ]
+  },
+  {
+    "id": "TC029",
+    "title": "Set a primary focus metric, run session, and see comparisons in summary",
+    "description": "Verifies setting a primary metric for an exercise carries through to an active session and produces focus metric comparisons on the summary screen.",
+    "category": "Focus Metric (Per-exercise primary metric)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /create-template"
+      },
+      {
+        "type": "action",
+        "description": "Add an exercise to the template"
+      },
+      {
+        "type": "action",
+        "description": "Select a primary focus metric for the exercise"
+      },
+      {
+        "type": "action",
+        "description": "Save the template"
+      },
+      {
+        "type": "action",
+        "description": "Click the action to start a workout using the newly saved template"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the active workout screen to load"
+      },
+      {
+        "type": "action",
+        "description": "Log at least one set for the exercise using valid values"
+      },
+      {
+        "type": "action",
+        "description": "End the workout session"
+      },
+      {
+        "type": "action",
+        "description": "Wait for the summary screen to load"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify focus metric comparisons are displayed for the exercise"
+      }
+    ]
+  },
+  {
+    "id": "TC030",
+    "title": "Unsupported or malformed focus metric value shows validation error then allows correction",
+    "description": "Verifies invalid metric input is blocked with a validation error and can be corrected to save the template.",
+    "category": "Focus Metric (Per-exercise primary metric)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /create-template"
+      },
+      {
+        "type": "action",
+        "description": "Add an exercise to the template"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to set an unsupported or malformed primary focus metric value"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to save the template"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify a validation error is visible"
+      },
+      {
+        "type": "action",
+        "description": "Correct the primary focus metric to a supported valid value"
+      },
+      {
+        "type": "action",
+        "description": "Save the template"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify the template is saved successfully"
+      }
+    ]
+  },
+  {
+    "id": "TC031",
+    "title": "Create-template page loads exercise configuration controls",
+    "description": "Verifies the create-template page loads and exposes controls to configure exercises including focus metric selection.",
+    "category": "Focus Metric (Per-exercise primary metric)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /auth"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_USER}} into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Fill {{LOGIN_PASSWORD}} into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Submit the login form"
+      },
+      {
+        "type": "action",
+        "description": "Navigate to /create-template"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify exercise configuration controls are displayed"
+      }
+    ]
+  }
+]

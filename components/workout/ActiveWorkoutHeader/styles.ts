@@ -12,7 +12,9 @@ export const styles = StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   headerCenter: {
     flex: 2,
@@ -49,5 +51,10 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 12,
+  },
+  minimizeBtn: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

@@ -1,4 +1,4 @@
-export type ExerciseType = 'weight_reps' | 'reps_only' | 'duration';
+export type ExerciseType = 'weight_reps' | 'reps_only' | 'duration' | 'weight_only';
 
 export type SetData = {
   id: string;
@@ -84,6 +84,8 @@ export interface UserData {
   avatarUri: string | null;
   weightUnit: 'kg' | 'lb';
   hasSeenOnboarding: boolean;
+  isRestTimerEnabled: boolean;
+  defaultRestTimer: number; // in seconds
 }
 
 export interface WorkoutState {

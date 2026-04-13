@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, WorkoutSession, Exercise } from '../types';
 import { PRESET_TEMPLATES } from '../presets';
-import { SupabaseSyncService } from '@/services/SupabaseSyncService';
+import { generateUUID } from '@/utils/uuid';
 
 export interface WorkflowSlice {
   startWorkout: (templateId?: string) => void;
@@ -37,7 +37,7 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
 
     set({
       activeWorkout: {
-        id: Date.now().toString(),
+        id: generateUUID(),
         startTime: Date.now(),
         templateId,
         workoutTitle,
@@ -81,6 +81,7 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
       activeWorkout: null,
     });
 
+    const { SupabaseSyncService } = require('@/services/SupabaseSyncService');
     SupabaseSyncService.queueMutation('workout_sessions', 'INSERT', newSession);
 
     return newSession.id;
@@ -100,6 +101,7 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
     set((state) => ({
       history: state.history.filter(s => s.id !== sessionId),
     }));
+    const { SupabaseSyncService } = require('@/services/SupabaseSyncService');
     SupabaseSyncService.queueMutation('workout_sessions', 'DELETE', { id: sessionId });
   },
 
@@ -107,7 +109,10 @@ export const createWorkflowSlice: StateCreator<WorkoutStore, [], [], WorkflowSli
     set((state) => {
       const updatedHistory = state.history.map(s => s.id === sessionId ? { ...s, ...data } : s);
       const session = updatedHistory.find(s => s.id === sessionId);
-      if (session) SupabaseSyncService.queueMutation('workout_sessions', 'UPDATE', session);
+      if (session) {
+        const { SupabaseSyncService } = require('@/services/SupabaseSyncService');
+        SupabaseSyncService.queueMutation('workout_sessions', 'UPDATE', session);
+      }
       return { history: updatedHistory };
     });
   },

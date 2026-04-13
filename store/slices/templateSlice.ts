@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { WorkoutStore, WorkoutTemplate, Exercise, SetData, FocusMetricType } from '../types';
 import { SupabaseSyncService } from '@/services/SupabaseSyncService';
+import { generateUUID } from '@/utils/uuid';
 
 export interface TemplateSlice {
   addTemplate: (template: WorkoutTemplate) => void;
@@ -47,7 +48,7 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
     
     set({
       draftTemplate: {
-        id: 'temp_' + Date.now(),
+        id: generateUUID(),
         title: 'New Template',
         type: 'Custom',
         timeEstimate: '45m',
@@ -295,7 +296,7 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
 
     const duplicated: WorkoutTemplate = {
       ...JSON.parse(JSON.stringify(sourceTemplate)),
-      id: 'template_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
+      id: generateUUID(),
       title: `${sourceTemplate.title} (Copy)`,
       isPreset: false, // Ensure a duplicated preset becomes a custom user template
     };

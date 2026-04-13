@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import { useWorkoutStore } from '@/store/workoutStore';
 import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 import { soundService } from '@/services/SoundService';
+import { MinimizedWorkoutBar } from '@/components/workout/MinimizedWorkoutBar';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -132,6 +133,7 @@ export default function RootLayout() {
           <Stack.Screen name="forgot-password" />
           <Stack.Screen name="reset-password" />
         </Stack>
+        <MinimizedWorkoutBar />
         <StatusBar style="light" />
       </View>
     </ThemeProvider>

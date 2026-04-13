@@ -14,6 +14,7 @@ import { Colors } from '../constants/Colors';
 import { ThemedText } from '../components/ThemedText';
 import { GridBackground, BlurGlow } from '../components/VisualAccents';
 import { useWorkoutStore } from '../store/workoutStore';
+import { useWorkoutActions } from '../hooks/workout/useWorkoutActions';
 import { PRESET_TEMPLATES } from '../store/presets';
 import { TemplateSummaryModal } from '../components/TemplateSummaryModal';
 import { TemplateActionModal } from '../components/TemplateActionModal';
@@ -22,8 +23,8 @@ const { width } = Dimensions.get('window');
 
 export default function AllTemplatesScreen() {
   const router = useRouter();
+  const { startNewWorkout } = useWorkoutActions();
   const userTemplates = useWorkoutStore(state => state.templates);
-  const startWorkout = useWorkoutStore(state => state.startWorkout);
   const history = useWorkoutStore(state => state.history);
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -83,9 +84,8 @@ export default function AllTemplatesScreen() {
 
   const handleModalStart = () => {
     if (selectedTemplate) {
-      startWorkout(selectedTemplate.id);
       setSummaryVisible(false);
-      router.push('/active');
+      startNewWorkout(selectedTemplate.id);
     }
   };
 

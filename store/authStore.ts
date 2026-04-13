@@ -1,8 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '@/utils/supabase';
 import { Session, User } from '@supabase/supabase-js';
-import { useWorkoutStore } from './workoutStore';
-import { SupabaseSyncService } from '@/services/SupabaseSyncService';
 
 interface AuthState {
   session: Session | null;
@@ -28,6 +26,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   signOut: async () => {
     await supabase.auth.signOut();
+    const { useWorkoutStore } = require('./workoutStore');
     useWorkoutStore.getState().reset();
     set({ session: null, user: null, profile: null, loading: false });
   },
@@ -47,6 +46,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ profile: data || null, loading: false });
 
       // After verifying profile exists (or creating it initially), pull the rest of the workout data
+      const { SupabaseSyncService } = require('@/services/SupabaseSyncService');
       await SupabaseSyncService.pullSync();
 
     } catch (error) {

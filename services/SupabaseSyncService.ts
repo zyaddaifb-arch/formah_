@@ -1,7 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Network from 'expo-network';
 import { supabase } from '@/utils/supabase';
-import { useAuthStore } from '@/store/authStore';
 
 const SYNC_QUEUE_KEY = 'formah_sync_queue';
 
@@ -64,6 +63,7 @@ class SyncService {
       return;
     }
 
+    const { useAuthStore } = require('@/store/authStore');
     const { user } = useAuthStore.getState();
     if (!user) return;
 
@@ -147,6 +147,7 @@ class SyncService {
       return;
     }
 
+    const { useAuthStore } = require('@/store/authStore');
     const { user } = useAuthStore.getState();
     if (!user) return;
 

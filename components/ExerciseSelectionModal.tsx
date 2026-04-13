@@ -8,11 +8,11 @@ import {
   TextInput,
   SectionList,
   Modal,
-  SafeAreaView,
   Alert,
   ScrollView,
   Keyboard
 } from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { soundService } from '@/services/SoundService';
@@ -32,6 +32,7 @@ export interface ExerciseSelectionModalProps {
 }
 
 export function ExerciseSelectionModal({ visible, onClose, onAddExercises, existingExerciseNames = [] }: ExerciseSelectionModalProps) {
+  const insets = useSafeAreaInsets();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [library, setLibrary] = useState<LibraryExercise[]>(EXERCISE_LIBRARY);
@@ -155,7 +156,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
         <GridBackground />
         <SafeAreaView style={styles.safeArea}>
           
-          <View style={styles.headerRow}>
+          <View style={[styles.headerRow, { paddingTop: Math.max(insets.top, 16) }]}>
             <View style={styles.headerLeft}>
               <TouchableOpacity onPress={onClose} style={styles.iconBtn}>
                 <MaterialCommunityIcons name="close" size={24} color={Colors.onSurface} />

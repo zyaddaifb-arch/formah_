@@ -23,6 +23,7 @@ import { FolderActionModal } from '../../components/FolderActionModal';
 const { width } = Dimensions.get('window');
 
 import { useWorkoutStore } from '../../store/workoutStore';
+import { useWorkoutActions } from '../../hooks/workout/useWorkoutActions';
 import { PRESET_TEMPLATES } from '../../store/presets';
 import { calculateStreakData } from '../../utils/streak';
 import { StreakGlow } from '../../components/StreakGlow';
@@ -30,8 +31,8 @@ import { StreakDetailsModal } from '../../components/StreakDetailsModal';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { startNewWorkout } = useWorkoutActions();
   const templates = useWorkoutStore(state => state.templates);
-  const startWorkout = useWorkoutStore(state => state.startWorkout);
   const history = useWorkoutStore(state => state.history);
   const user = useWorkoutStore(state => state.user);
   const folders = useWorkoutStore(state => state.folders);
@@ -63,8 +64,7 @@ export default function HomeScreen() {
   const streakDays = streakData.currentStreak;
 
   const handleStartWorkout = () => {
-    startWorkout();
-    router.push('/active');
+    startNewWorkout();
   };
 
   const handleTemplatePress = (template: any) => {
@@ -74,9 +74,8 @@ export default function HomeScreen() {
 
   const handleModalStart = () => {
     if (selectedTemplate) {
-      startWorkout(selectedTemplate.id);
       setSummaryVisible(false);
-      router.push('/active');
+      startNewWorkout(selectedTemplate.id);
     }
   };
 

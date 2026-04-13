@@ -103,13 +103,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     width: '100%',
-    height: 100,
+    height: 90,
     backgroundColor: 'transparent',
   },
   tabBarMain: {
     flexDirection: 'row',
-    height: 100,
-    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
+    height: 90,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
     paddingHorizontal: 32,
     alignItems: 'flex-end',
     justifyContent: 'space-between',
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 4,
     // Move the entire wrapper up so it sits "on top" of the bar
-    transform: [{ translateY: -15 }],
+    transform: [{ translateY: -8 }],
     zIndex: 10,
   },
   startBtn: {

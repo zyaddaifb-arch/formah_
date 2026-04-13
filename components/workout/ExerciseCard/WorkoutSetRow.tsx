@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { View, TextInput, TouchableOpacity } from 'react-native';
+import { View, TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
@@ -80,7 +80,7 @@ export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = memo(({
         </TouchableOpacity>
       </View>
 
-      {exerciseType === 'weight_reps' && (
+      {(exerciseType === 'weight_reps' || exerciseType === 'weight_only') && (
         <View style={styles.inputCell}>
           <TextInput 
             style={[
@@ -88,50 +88,60 @@ export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = memo(({
               set.done && { color: Colors.primary },
               isInvalid.weight && styles.inputInvalid
             ]} 
-            keyboardType="numeric"
-            defaultValue={set.weight !== undefined ? set.weight.toString() : ''}
+            keyboardType="number-pad"
+            value={set.weight ? set.weight.toString() : ''}
             placeholder={previousWeight > 0 ? previousWeight.toString() : "0"}
             placeholderTextColor={Colors.outlineVariant}
-            onChangeText={(val) => onUpdateSet({ weight: Number(val) || 0 })}
+            onChangeText={(val) => {
+              const cleaned = val.replace(/[^0-9]/g, '');
+              onUpdateSet({ weight: Number(cleaned) || 0 });
+            }}
             editable={!set.done}
           />
         </View>
       )}
       
-      {exerciseType !== 'weight_reps' && (
+      {(exerciseType === 'duration' || exerciseType === 'reps_only') && (
         <View style={{ flex: 1.5 }} />
       )}
 
-      <View style={styles.inputCell}>
-        <TextInput 
-          style={[
-            styles.miniInput, 
-            set.done && { color: Colors.primary },
-            (isInvalid.reps || isInvalid.time) && styles.inputInvalid
-          ]} 
-          keyboardType="numeric"
-          defaultValue={
-            exerciseType === 'duration' 
-              ? (set.time !== undefined ? set.time.toString() : '') 
-              : (set.reps !== undefined ? set.reps.toString() : '')
-          }
-          placeholder={
-            exerciseType === 'duration' 
-              ? (previousTime > 0 ? `${previousTime}s` : "0s") 
-              : (previousReps > 0 ? previousReps.toString() : "0")
-          }
-          placeholderTextColor={Colors.outlineVariant}
-          onChangeText={(val) => {
-            const num = Number(val) || 0;
-            if (exerciseType === 'duration') {
-              onUpdateSet({ time: num });
-            } else {
-              onUpdateSet({ reps: num });
+      {exerciseType !== 'weight_only' && (
+        <View style={styles.inputCell}>
+          <TextInput 
+            style={[
+              styles.miniInput, 
+              set.done && { color: Colors.primary },
+              (isInvalid.reps || isInvalid.time) && styles.inputInvalid
+            ]} 
+            keyboardType="number-pad"
+            value={
+              exerciseType === 'duration' 
+                ? (set.time ? set.time.toString() : '') 
+                : (set.reps ? set.reps.toString() : '')
             }
-          }}
-          editable={!set.done}
-        />
-      </View>
+            placeholder={
+              exerciseType === 'duration' 
+                ? (previousTime > 0 ? `${previousTime}s` : "0") 
+                : (previousReps > 0 ? previousReps.toString() : "0")
+            }
+            placeholderTextColor={Colors.outlineVariant}
+            onChangeText={(val) => {
+              const cleaned = val.replace(/[^0-9]/g, '');
+              const num = Number(cleaned) || 0;
+              if (exerciseType === 'duration') {
+                onUpdateSet({ time: num });
+              } else {
+                onUpdateSet({ reps: num });
+              }
+            }}
+            editable={!set.done}
+          />
+        </View>
+      )}
+
+      {exerciseType === 'weight_only' && (
+        <View style={{ flex: 1.5 }} />
+      )}
 
       {!isTemplateMode && (
         <View style={{ flex: 1, alignItems: 'flex-end' }}>
@@ -140,7 +150,12 @@ export const WorkoutSetRow: React.FC<WorkoutSetRowProps> = memo(({
               styles.checkBtn, 
               set.done && (isWarmUp ? styles.checkBtnWarmUpActive : styles.checkBtnActive)
             ]}
-            onPress={onToggleDone}
+            onPress={() => {
+              Keyboard.dismiss();
+              setTimeout(() => {
+                onToggleDone();
+              }, 50);
+            }}
           >
             <MaterialCommunityIcons 
               name="check" 

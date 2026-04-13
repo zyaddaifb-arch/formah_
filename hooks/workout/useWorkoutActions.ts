@@ -9,8 +9,9 @@ import { useWorkoutStore } from '../../store/workoutStore';
 export const useWorkoutActions = () => {
   const router = useRouter();
   const activeWorkout = useWorkoutStore(state => state.activeWorkout);
-  const finishWorkout = useWorkoutStore(state => state.finishWorkout);
   const cancelWorkout = useWorkoutStore(state => state.cancelWorkout);
+  const startWorkout = useWorkoutStore(state => state.startWorkout);
+  const finishWorkout = useWorkoutStore(state => state.finishWorkout);
   const markAllValidSetsDone = useWorkoutStore(state => state.markAllValidSetsDone);
 
   const handleFinish = () => {
@@ -24,7 +25,7 @@ export const useWorkoutActions = () => {
         if (s.done) {
           hasCheckedSets = true;
         } else {
-          if (s.weight > 0 && s.reps > 0) {
+          if ((s.weight || 0) > 0 && (s.reps || 0) > 0) {
             hasValidUncheckedSets = true;
           }
         }
@@ -87,8 +88,42 @@ export const useWorkoutActions = () => {
     );
   };
 
+  const startNewWorkout = (templateId?: string) => {
+    if (activeWorkout) {
+      Alert.alert(
+        'Workout In Progress',
+        'You already have an active session running. What would you like to do?',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Resume Current', onPress: () => router.push('/active') },
+          { 
+            text: 'Discard & Start New', 
+            style: 'destructive',
+            onPress: () => {
+              cancelWorkout();
+              startWorkout(templateId);
+              router.push('/active');
+            } 
+          },
+          { 
+            text: 'Finish & Start New', 
+            onPress: () => {
+              finishWorkout();
+              startWorkout(templateId);
+              router.push('/active');
+            } 
+          }
+        ]
+      );
+    } else {
+      startWorkout(templateId);
+      router.push('/active');
+    }
+  };
+
   return {
     handleFinish,
-    handleCancel
+    handleCancel,
+    startNewWorkout
   };
 };

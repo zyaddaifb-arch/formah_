@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -22,6 +22,7 @@ import { ActiveWorkoutHeader } from '../components/workout/ActiveWorkoutHeader';
 import { WorkoutProgress } from '../components/workout/WorkoutProgress';
 import { RestTimerModal } from '@/components/RestTimerModal';
 import { RenameWorkoutModal } from '../components/workout/Modals';
+import { KeyboardToolbar } from '../components/workout/KeyboardToolbar';
 
 export default function ActiveWorkoutScreen() {
   const router = useRouter();
@@ -30,7 +31,8 @@ export default function ActiveWorkoutScreen() {
   // when its specific slice of data changes, not the whole activeWorkout object.
   const activeWorkoutId = useWorkoutStore(state => state.activeWorkout?.id);
   const activeWorkoutTitle = useWorkoutStore(state => state.activeWorkout?.workoutTitle);
-  const exercises = useWorkoutStore(state => state.activeWorkout?.exercises ?? []);
+  const exercisesRaw = useWorkoutStore(state => state.activeWorkout?.exercises);
+  const exercises = exercisesRaw ?? [];
   const startTime = useWorkoutStore(state => state.activeWorkout?.startTime);
   const history = useWorkoutStore(state => state.history);
 
@@ -51,6 +53,8 @@ export default function ActiveWorkoutScreen() {
   const removeSetFromExercise = useWorkoutStore(state => state.removeSetFromExercise);
   const startRestTimer = useWorkoutStore(state => state.startRestTimer);
   const updateExerciseFocusMetric = useWorkoutStore(state => state.updateExerciseFocusMetric);
+  const isRestTimerEnabled = useWorkoutStore(state => state.user.isRestTimerEnabled);
+  const defaultRestTimer = useWorkoutStore(state => state.user.defaultRestTimer);
   
   // Custom Hooks
   const elapsedTime = useActiveTimer(startTime);
@@ -106,14 +110,23 @@ export default function ActiveWorkoutScreen() {
       <BlurGlow position="topRight" color={Colors.primary} />
       <BlurGlow position="bottomLeft" color={Colors.tertiary} />
 
-      <SafeAreaView style={styles.safeArea}>
-        <WorkoutEditor
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <SafeAreaView style={styles.safeArea}>
+          <WorkoutEditor
           mode="active"
           title={activeWorkoutTitle ?? ''}
           exercises={exercises}
           previousExerciseCache={previousExerciseCache}
           lineTimers={lineTimers}
-          onLineTimerStart={startLineTimer}
+          onLineTimerStart={(setId) => {
+            if (isRestTimerEnabled) {
+              const exercise = exercises.find(e => e.sets.some(s => s.id === setId));
+              startLineTimer(setId, exercise?.defaultRestTimer || defaultRestTimer);
+            }
+          }}
           onLineTimerCancel={cancelLineTimer}
           onLineTimerAdjust={adjustLineTimer}
           onLineTimerSkip={skipLineTimer}
@@ -143,6 +156,7 @@ export default function ActiveWorkoutScreen() {
                 restTimerTarget={restTimerTarget}
                 onRestTimerPress={() => setRestTimerVisible(true)}
                 onFinishPress={handleFinish}
+                onMinimizePress={() => router.navigate('/')}
               />
               {exercises.length > 0 && (
                 <WorkoutProgress progressPct={progressPct} />
@@ -157,6 +171,9 @@ export default function ActiveWorkoutScreen() {
           )}
         />
       </SafeAreaView>
+      </KeyboardAvoidingView>
+
+      <KeyboardToolbar />
 
       <RestTimerModal
         visible={restTimerVisible}

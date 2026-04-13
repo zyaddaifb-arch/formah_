@@ -22,6 +22,7 @@ import { useWorkoutStore } from '../../store/workoutStore';
 import { calculateStreakData } from '../../utils/streak';
 import { useAuthStore } from '@/store/authStore';
 import { supabase } from '@/utils/supabase';
+import { TimerMenu } from '@/components/profile/TimerMenu';
 
 
 const { width } = Dimensions.get('window');
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
   const { signOut } = useAuthStore();
   const [isEditingName, setIsEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(user.name);
+  const [isTimerMenuVisible, setIsTimerMenuVisible] = useState(false);
 
   const streakData = React.useMemo(() => calculateStreakData(history), [history]);
   const totalWorkouts = history.length;
@@ -53,7 +55,7 @@ export default function ProfileScreen() {
       }
 
       const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        mediaTypes: ['images'],
         allowsEditing: true,
         aspect: [1, 1],
         quality: 0.7,
@@ -124,8 +126,8 @@ export default function ProfileScreen() {
                 // Delete data from profiles table
                 const { error } = await supabase.from('profiles').delete().eq('id', user.id);
                 if (error) {
-                  Alert.alert("Error", "Could not delete data. Please try again later.");
-                  return;
+                   Alert.alert("Error", "Could not delete data. Please try again later.");
+                   return;
                 }
                 // Sign out and clear local storage
                 await signOut();
@@ -135,6 +137,14 @@ export default function ProfileScreen() {
         }
       ]
     );
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    if (mins > 0 && secs > 0) return `${mins}m ${secs}s`;
+    if (mins > 0) return `${mins} min`;
+    return `${secs} sec`;
   };
 
   return (
@@ -220,6 +230,21 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
             </View>
+
+            <SettingToggle 
+              icon="timer-outline" 
+              label="Automatic Rest Timer" 
+              value={user.isRestTimerEnabled} 
+              onValueChange={(val) => updateUser({ isRestTimerEnabled: val })} 
+            />
+
+            <SettingItem 
+              icon="clock-edit-outline" 
+              label="Default Rest Duration" 
+              value={formatDuration(user.defaultRestTimer)}
+              onPress={() => setIsTimerMenuVisible(true)} 
+            />
+
             <SettingItem icon="bell-outline" label="Notifications" />
           </SettingGroup>
 
@@ -257,6 +282,13 @@ export default function ProfileScreen() {
         </View>
         <View style={{ height: 120 }} />
       </ScrollView>
+
+      <TimerMenu 
+        isVisible={isTimerMenuVisible}
+        onClose={() => setIsTimerMenuVisible(false)}
+        currentValue={user.defaultRestTimer}
+        onSelect={(val) => updateUser({ defaultRestTimer: val })}
+      />
     </View>
   );
 }
@@ -278,14 +310,32 @@ const SettingGroup = ({ title, children }: { title: string, children: React.Reac
   </View>
 );
 
-const SettingItem = ({ icon, label, onPress }: { icon: string, label: string, onPress?: () => void }) => (
+const SettingItem = ({ icon, label, value, onPress }: { icon: string, label: string, value?: string, onPress?: () => void }) => (
   <TouchableOpacity style={styles.settingItemRow} onPress={onPress}>
     <View style={styles.settingItemLeft}>
       <MaterialCommunityIcons name={icon as any} size={24} color={Colors.primary} style={{ opacity: 0.6 }} />
       <ThemedText type="body">{label}</ThemedText>
     </View>
-    <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.onSurfaceVariant} />
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      {value && <ThemedText type="body" color={Colors.primary} size={14}>{value}</ThemedText>}
+      <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.onSurfaceVariant} />
+    </View>
   </TouchableOpacity>
+);
+
+const SettingToggle = ({ icon, label, value, onValueChange }: { icon: string, label: string, value: boolean, onValueChange: (val: boolean) => void }) => (
+  <View style={styles.settingItemRow}>
+    <View style={styles.settingItemLeft}>
+      <MaterialCommunityIcons name={icon as any} size={24} color={Colors.primary} style={{ opacity: 0.6 }} />
+      <ThemedText type="body">{label}</ThemedText>
+    </View>
+    <TouchableOpacity 
+       style={[styles.toggleSwitch, { backgroundColor: value ? Colors.primary : Colors.surfaceContainerHighest }]} 
+       onPress={() => onValueChange(!value)}
+    >
+       <View style={[styles.toggleKnob, { marginLeft: value ? 'auto' : 0 }]} />
+    </TouchableOpacity>
+  </View>
 );
 
 const styles = StyleSheet.create({
@@ -316,10 +366,11 @@ const styles = StyleSheet.create({
   unitBtn: { paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16 },
   unitBtnActive: { backgroundColor: Colors.primary },
   toggleSwitch: { width: 44, height: 26, backgroundColor: Colors.primary, borderRadius: 13, justifyContent: 'center', paddingHorizontal: 4 },
-  toggleKnob: { width: 18, height: 18, backgroundColor: Colors.onPrimaryFixed, borderRadius: 9, marginLeft: 'auto' },
+  toggleKnob: { width: 18, height: 18, backgroundColor: Colors.onPrimaryFixed, borderRadius: 9 },
   actionButtons: { gap: 12 },
   logoutBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: Colors.surfaceContainerHigh, height: 60, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.05)' },
   deleteBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: 'rgba(255, 113, 108, 0.05)', height: 60, borderRadius: 16, borderWidth: 1, borderColor: 'rgba(255, 113, 108, 0.1)' },
   versionText: { textAlign: 'center', marginTop: 16, opacity: 0.3, letterSpacing: 3 },
 });
+
 

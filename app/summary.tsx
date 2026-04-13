@@ -4,9 +4,9 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity, 
-  Dimensions,
-  SafeAreaView
+  Dimensions
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
@@ -138,7 +138,7 @@ export default function SummaryScreen() {
                        <View key={s.id} style={styles.setLogRow}>
                          <ThemedText type="body" size={13} color={Colors.onSurfaceVariant} style={{ width: 24 }}>W{i + 1}</ThemedText>
                          <ThemedText type="headline" size={13} color={Colors.onSurfaceVariant}>
-                           {s.weight > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
+                           {(s.weight ?? 0) > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
                          </ThemedText>
                        </View>
                      ))}
@@ -149,7 +149,7 @@ export default function SummaryScreen() {
                        <View key={s.id} style={styles.setLogRow}>
                          <ThemedText type="body" size={13} color={Colors.onSurfaceVariant} style={{ width: 24 }}>{i + 1}</ThemedText>
                          <ThemedText type="headline" size={13} color={Colors.onSurface}>
-                           {s.weight > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
+                           {(s.weight ?? 0) > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
                          </ThemedText>
                        </View>
                      ))}
