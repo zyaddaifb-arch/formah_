@@ -57,13 +57,13 @@ const OnboardingSlide = ({ item, index, scrollX }: { item: any, index: number, s
     const scale = interpolate(
       scrollX.value,
       [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH],
-      [1.1, 1, 1.1],
+      [1.3, 1, 1.3],
       Extrapolate.CLAMP
     );
     const translateX = interpolate(
         scrollX.value,
         [(index - 1) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 1) * SCREEN_WIDTH],
-        [SCREEN_WIDTH * 0.2, 0, -SCREEN_WIDTH * 0.2],
+        [SCREEN_WIDTH * 0.3, 0, -SCREEN_WIDTH * 0.3],
         Extrapolate.CLAMP
     );
     return {
@@ -73,7 +73,7 @@ const OnboardingSlide = ({ item, index, scrollX }: { item: any, index: number, s
       ],
       opacity: interpolate(
         scrollX.value,
-        [(index - 0.7) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 0.7) * SCREEN_WIDTH],
+        [(index - 0.5) * SCREEN_WIDTH, index * SCREEN_WIDTH, (index + 0.5) * SCREEN_WIDTH],
         [0, 1, 0],
         Extrapolate.CLAMP
       )

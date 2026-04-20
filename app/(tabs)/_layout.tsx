@@ -53,8 +53,8 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
             );
           }
 
-          const iconName = route.name === 'history' ? 'history' : 'account-outline';
-          const label = route.name === 'history' ? 'History' : 'Profile';
+          const iconName = route.name === 'history' ? 'history' : 'format-list-bulleted-type';
+          const label = route.name === 'history' ? 'History' : 'Library';
 
           return (
             <TouchableOpacity
@@ -93,7 +93,7 @@ export default function TabLayout() {
     >
       <Tabs.Screen name="history" />
       <Tabs.Screen name="home" />
-      <Tabs.Screen name="profile" />
+      <Tabs.Screen name="exercises" />
     </Tabs>
   );
 }
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
   tabItem: {
     alignItems: 'center',
     gap: 4,
-    width: 60,
+    minWidth: 64,
   },
   tabLabel: {
     letterSpacing: 2,

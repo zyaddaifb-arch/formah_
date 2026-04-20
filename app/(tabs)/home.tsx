@@ -226,9 +226,14 @@ export default function HomeScreen() {
       <GridBackground />
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={styles.greetingSection}>
-          <ThemedText type="label" size={12} color={Colors.primary} style={styles.trackingWidest}>WELCOME BACK</ThemedText>
-          <ThemedText type="headline" size={36} color={Colors.onSurface} style={styles.greetingTitle}>{user.name}</ThemedText>
+        <View style={[styles.greetingSection, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }]}>
+          <View>
+            <ThemedText type="label" size={12} color={Colors.primary} style={styles.trackingWidest}>WELCOME BACK</ThemedText>
+            <ThemedText type="headline" size={36} color={Colors.onSurface} style={styles.greetingTitle}>{user.name}</ThemedText>
+          </View>
+          <TouchableOpacity onPress={() => router.push('/profile')} style={styles.iconBtn}>
+            <MaterialCommunityIcons name="account-circle-outline" size={24} color={Colors.primary} />
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity 

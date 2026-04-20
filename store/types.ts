@@ -189,7 +189,7 @@ export type WorkoutStore = WorkoutState &
   UserActions &
   FolderActions & {
     setHasHydrated: (state: boolean) => void;
-    reset: () => void;
+    reset: (fullWipe?: boolean) => void;
   };
 
 // ─── Exercise Library ─────────────────────────────────────────────────────────

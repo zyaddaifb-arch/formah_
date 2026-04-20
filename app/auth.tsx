@@ -282,25 +282,8 @@ export default function LoginScreen() {
                 )}
               </TouchableOpacity>
             </View>
-
-            <View style={styles.divider}>
-              <View style={styles.line} />
-              <ThemedText type="label" size={10} style={styles.dividerText}>OR SECURE LOG IN WITH</ThemedText>
-              <View style={styles.line} />
-            </View>
-
-            <View style={styles.socialGrid}>
-              <TouchableOpacity activeOpacity={0.7} style={styles.socialBtn}>
-                <MaterialCommunityIcons name="google" size={18} color={Colors.onSurface} style={{ marginRight: 10 }} />
-                <ThemedText type="headline" size={11} style={styles.socialBtnText}>GOOGLE</ThemedText>
-              </TouchableOpacity>
-              <TouchableOpacity activeOpacity={0.7} style={styles.socialBtn}>
-                <MaterialCommunityIcons name="apple" size={18} color={Colors.onSurface} style={{ marginRight: 10 }} />
-                <ThemedText type="headline" size={11} style={styles.socialBtnText}>APPLE</ThemedText>
-              </TouchableOpacity>
-            </View>
           </Animated.View>
-          
+
           <Animated.View entering={FadeInDown.delay(600).duration(800)} style={styles.footer}>
              <ThemedText type="body" size={12} color={Colors.onSurfaceVariant} style={styles.footerText}>
                By continuing, you agree to our Terms of Service.
@@ -428,39 +411,7 @@ const styles = StyleSheet.create({
     letterSpacing: 2,
     textTransform: 'uppercase',
   },
-  divider: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 24,
-  },
-  line: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  dividerText: {
-    paddingHorizontal: 16,
-    letterSpacing: 1,
-    color: 'rgba(166, 170, 190, 0.4)',
-  },
-  socialGrid: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  socialBtn: {
-    flex: 1,
-    height: 56,
-    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  socialBtnText: {
-    letterSpacing: 1,
-  },
+
   footer: {
     marginTop: 32,
     alignItems: 'center',

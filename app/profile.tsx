@@ -11,23 +11,26 @@ import {
   Platform,
   Linking
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import * as WebBrowser from 'expo-web-browser';
-import { Colors } from '../../constants/Colors';
-import { ThemedText } from '../../components/ThemedText';
-import { GridBackground } from '../../components/VisualAccents';
+import { useRouter } from 'expo-router';
+import { Colors } from '../constants/Colors';
+import { ThemedText } from '../components/ThemedText';
+import { GridBackground } from '../components/VisualAccents';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useWorkoutStore } from '../../store/workoutStore';
-import { calculateStreakData } from '../../utils/streak';
-import { useAuthStore } from '@/store/authStore';
-import { supabase } from '@/utils/supabase';
-import { TimerMenu } from '@/components/profile/TimerMenu';
+import { useWorkoutStore } from '../store/workoutStore';
+import { calculateStreakData } from '../utils/streak';
+import { useAuthStore } from '../store/authStore';
+import { supabase } from '../utils/supabase';
+import { TimerMenu } from '../components/profile/TimerMenu';
 
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, history, updateUser, setWeightUnit } = useWorkoutStore();
   const { signOut } = useAuthStore();
   const [isEditingName, setIsEditingName] = useState(false);
@@ -129,7 +132,9 @@ export default function ProfileScreen() {
                    Alert.alert("Error", "Could not delete data. Please try again later.");
                    return;
                 }
-                // Sign out and clear local storage
+                // Clear local storage with hard wipe first so routing sends us to onboarding
+                useWorkoutStore.getState().reset(true);
+                // Then sign out
                 await signOut();
                 Alert.alert("Account Deleted", "Your data has been scheduled for deletion.");
              }
@@ -148,10 +153,15 @@ export default function ProfileScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <GridBackground />
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 24, paddingVertical: 12 }}>
+        <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginLeft: -8 }}>
+          <MaterialCommunityIcons name="arrow-left" size={28} color={Colors.onSurface} />
+        </TouchableOpacity>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        <View style={[styles.profileSection, { marginTop: 40 }]}>
+        <View style={styles.profileSection}>
           <TouchableOpacity onPress={handlePickImage} activeOpacity={0.8}>
             <View style={styles.avatarWrapper}>
               <LinearGradient
@@ -289,7 +299,7 @@ export default function ProfileScreen() {
         currentValue={user.defaultRestTimer}
         onSelect={(val) => updateUser({ defaultRestTimer: val })}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 

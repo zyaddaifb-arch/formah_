@@ -139,7 +139,12 @@ export default function HistoryScreen() {
         contentContainerStyle={styles.scrollContent} 
         showsVerticalScrollIndicator={false}
       >
-        <ThemedText type="headline" size={40} color={Colors.onSurface} style={styles.pageTitle}>HISTORY</ThemedText>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 24 }}>
+          <ThemedText type="headline" size={40} color={Colors.onSurface} style={{ fontWeight: '900', letterSpacing: -1 }}>HISTORY</ThemedText>
+          <TouchableOpacity onPress={() => router.push('/profile')} style={{ padding: 4 }}>
+            <MaterialCommunityIcons name="account-circle-outline" size={28} color={Colors.primary} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.calendarModule}>
           <View style={styles.calendarHeader}>

@@ -93,7 +93,7 @@ export default function RootLayout() {
     
     // Define screen groups
     const isAuthScreen = ['auth', 'forgot-password', 'reset-password', 'onboarding'].includes(firstSegment);
-    const isProtectedScreen = ['(tabs)', 'active'].includes(firstSegment);
+    const isProtectedScreen = ['(tabs)', 'active', 'profile'].includes(firstSegment);
     const isRoot = !firstSegment;
 
     if (!session) {

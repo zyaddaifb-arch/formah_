@@ -25,9 +25,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setProfile: (profile) => set({ profile, loading: false }),
 
   signOut: async () => {
+    const { SupabaseSyncService } = require('@/services/SupabaseSyncService');
+    await SupabaseSyncService.attemptSync();
+    
     await supabase.auth.signOut();
     const { useWorkoutStore } = require('./workoutStore');
-    useWorkoutStore.getState().reset();
+    useWorkoutStore.getState().reset(false); // Preserve onboarding
     set({ session: null, user: null, profile: null, loading: false });
   },
 
@@ -45,8 +48,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       set({ profile: data || null, loading: false });
 
-      // After verifying profile exists (or creating it initially), pull the rest of the workout data
+      // After verifying profile exists, first flush any local/guest data to the cloud
       const { SupabaseSyncService } = require('@/services/SupabaseSyncService');
+      await SupabaseSyncService.attemptSync();
+      // Then pull down the fully synchronized state
       await SupabaseSyncService.pullSync();
 
     } catch (error) {

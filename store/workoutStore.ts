@@ -35,21 +35,24 @@ export const useWorkoutStore = create<WorkoutStore>()(
       ...createTemplateSlice(set, get, store),
       ...createUserSlice(set, get, store),
       ...createFolderSlice(set, get, store),
-      reset: () => set({
-        templates: [],
-        folders: [],
-        history: [],
-        activeWorkout: null,
-        draftTemplate: null,
-        user: {
-          name: 'Alex Thorne',
-          avatarUri: null,
-          weightUnit: 'lb',
-          hasSeenOnboarding: false,
-          isRestTimerEnabled: true,
-          defaultRestTimer: 90, // default 1:30
-        },
-      }),
+      reset: (fullWipe = false) => {
+        const wasOnboardingSeen = fullWipe ? false : get().user.hasSeenOnboarding;
+        set({
+          templates: [],
+          folders: [],
+          history: [],
+          activeWorkout: null,
+          draftTemplate: null,
+          user: {
+            name: 'Alex Thorne',
+            avatarUri: null,
+            weightUnit: 'lb',
+            hasSeenOnboarding: wasOnboardingSeen,
+            isRestTimerEnabled: true,
+            defaultRestTimer: 90,
+          },
+        });
+      },
     }),
 
     {
