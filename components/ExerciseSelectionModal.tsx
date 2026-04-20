@@ -19,6 +19,9 @@ import { soundService } from '@/services/SoundService';
 import { ThemedText } from './ThemedText';
 import { GridBackground } from './VisualAccents';
 import { ExerciseDetailsModal } from './ExerciseDetailsModal';
+import { Image } from 'expo-image';
+import exerciseMapping from '@/constants/exerciseMapping.json';
+
 
 // LibraryExercise type is defined in store/types.ts
 export type { LibraryExercise } from '@/store/types';
@@ -231,8 +234,18 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                 >
                   <View style={styles.itemLeft}>
                     <View style={styles.thumbnailBox}>
-                      <ThemedText type="headline" size={22} color={Colors.onSurface}>{item.name.charAt(0)}</ThemedText>
+                      {(exerciseMapping as any)[item.id]?.thumbnail ? (
+                        <Image 
+                          source={{ uri: (exerciseMapping as any)[item.id].thumbnail }}
+                          style={styles.thumbnailImage}
+                          contentFit="cover"
+                          transition={200}
+                        />
+                      ) : (
+                        <ThemedText type="headline" size={22} color={Colors.onSurface}>{item.name.charAt(0)}</ThemedText>
+                      )}
                     </View>
+
                     
                     <View style={styles.itemInfo}>
                       <ThemedText type="headline" size={16} color={isAlreadyAdded ? Colors.onSurfaceVariant : Colors.onSurface}>{item.name}</ThemedText>
@@ -255,7 +268,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                           setSelectedDetailName(item.name);
                         }}
                       >
-                        <MaterialCommunityIcons name="help" size={16} color={Colors.onSurfaceVariant} />
+                        <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.onSurfaceVariant} />
                       </TouchableOpacity>
                     )}
                   </View>
@@ -488,7 +501,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceContainerHighest,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden', // Ensure image stays within borders
   },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+
   itemInfo: {
     justifyContent: 'center',
     gap: 2

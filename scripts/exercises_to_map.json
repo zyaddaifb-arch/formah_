@@ -1,0 +1,74 @@
+[
+  {
+    "id": "chest_001",
+    "name": "Barbell Bench Press"
+  },
+  {
+    "id": "chest_002",
+    "name": "Incline Barbell Bench Press"
+  },
+  {
+    "id": "chest_003",
+    "name": "Decline Barbell Bench Press"
+  },
+  {
+    "id": "chest_004",
+    "name": "Dumbbell Bench Press"
+  },
+  {
+    "id": "chest_005",
+    "name": "Incline Dumbbell Press"
+  },
+  {
+    "id": "chest_006",
+    "name": "Decline Dumbbell Press"
+  },
+  {
+    "id": "chest_007",
+    "name": "Dumbbell Fly"
+  },
+  {
+    "id": "chest_008",
+    "name": "Incline Dumbbell Fly"
+  },
+  {
+    "id": "chest_009",
+    "name": "Cable Crossover"
+  },
+  {
+    "id": "chest_010",
+    "name": "Low Cable Fly"
+  },
+  {
+    "id": "chest_011",
+    "name": "High Cable Fly"
+  },
+  {
+    "id": "chest_012",
+    "name": "Chest Press Machine"
+  },
+  {
+    "id": "chest_013",
+    "name": "Pec Deck Fly"
+  },
+  {
+    "id": "chest_014",
+    "name": "Push-up"
+  },
+  {
+    "id": "chest_015",
+    "name": "Wide Push-up"
+  },
+  {
+    "id": "chest_016",
+    "name": "Diamond Push-up"
+  },
+  {
+    "id": "chest_017",
+    "name": "Around the World"
+  },
+  {
+    "id": "chest_018",
+    "name": "Svend Press"
+  }
+]

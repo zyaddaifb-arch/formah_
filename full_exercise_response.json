@@ -1,0 +1,77 @@
+{
+  "success": true,
+  "data": {
+    "exerciseId": "exr_41n2ha5iPFpN3hEJ",
+    "name": "Bridge - Mountain Climber ",
+    "imageUrl": "https://cdn.exercisedb.dev/media/w/images/EsVOYBdhDN.jpg",
+    "imageUrls": {
+      "360p": "https://cdn.exercisedb.dev/media/w/images/8HglZxks53.jpg",
+      "480p": "https://cdn.exercisedb.dev/media/w/images/EsVOYBdhDN.jpg",
+      "720p": "https://cdn.exercisedb.dev/media/w/images/nXgCE4E6Hq.jpg",
+      "1080p": "https://cdn.exercisedb.dev/media/w/images/Dj6kVVnRkn.jpg"
+    },
+    "equipments": [
+      "BODY WEIGHT"
+    ],
+    "bodyParts": [
+      "WAIST"
+    ],
+    "exerciseType": "STRENGTH",
+    "targetMuscles": [
+      "OBLIQUES"
+    ],
+    "secondaryMuscles": [
+      "QUADRICEPS",
+      "PECTINEUS",
+      "ADDUCTOR BREVIS",
+      "TENSOR FASCIAE LATAE",
+      "ILIOPSOAS",
+      "ADDUCTOR LONGUS",
+      "RECTUS ABDOMINIS",
+      "ANTERIOR DELTOID"
+    ],
+    "videoUrl": "https://cdn.exercisedb.dev/w/videos/Y9wqC8B/41n2ha5iPFpN3hEJ__Bridge---Mountain-Climber-(Cross-Body)-(female)_Waist.mp4",
+    "keywords": [
+      "Bodyweight exercise for waist",
+      "Bridge Mountain Climber workout",
+      "Waist targeting exercises",
+      "Bodyweight Bridge - Mountain Climber",
+      "Waist toning exercises",
+      "Bridge - Mountain Climber for waist",
+      "Bodyweight exercises for core",
+      "Strengthening waist exercise",
+      "Home workout for waist",
+      "No-equipment waist exercise"
+    ],
+    "overview": "The Bridge - Mountain Climber exercise is a dynamic workout that primarily targets your core, glutes, and lower body, while also improving cardiovascular endurance. It's an ideal exercise for individuals at intermediate or advanced fitness levels looking to enhance overall strength and agility. Engaging in this exercise can help improve muscle tone, promote better posture, and increase metabolic rate for efficient fat burning, making it a desirable choice for those aiming for weight loss or a more defined physique.",
+    "instructions": [
+      "Push through your heels and lift your hips off the ground while keeping your back straight, this is your starting position.",
+      "Now, bring one knee up towards your chest, similar to a running motion, then return it to the starting position.",
+      "Repeat this movement with the other knee, this completes one rep of the Mountain Climber.",
+      "Continue alternating knees for your desired number of repetitions, maintaining the bridge position throughout the exercise."
+    ],
+    "exerciseTips": [
+      "Core Engagement: Engage your core muscles throughout the entire exercise. This not only helps to stabilize your body but also maximizes the effectiveness of the exercise. A common mistake is to focus on speed rather than muscle engagement. Slow, controlled movements are more effective and safer.",
+      "Controlled Breathing: Breathe steadily throughout the exercise. Inhale as you lift into the bridge and exhale as you transition into the mountain climber. Holding your breath can cause dizziness and decrease your performance.",
+      "Avoid Rushing: Many people make the"
+    ],
+    "variations": [
+      "The Sliding Bridge Mountain Climber, where you use sliders or towels under your feet to add an element of instability and increase the difficulty level.",
+      "The Spiderman Bridge Mountain Climber, where you bring your knee out to the side towards your elbow during the mountain climber phase to target your obliques.",
+      "The Decline Bridge Mountain Climber, where your hands are on an elevated surface for the bridge and your feet are on the ground for the mountain climber, making it more challenging.",
+      "The Bridge Mountain Climber with a Twist, where you twist your torso and bring your knee towards the opposite elbow during the mountain climber phase to engage your abs more."
+    ],
+    "relatedExerciseIds": [
+      "exr_41n2hrfQD4pUfaNs",
+      "exr_41n2haDnQV1kngVR",
+      "exr_41n2hPAp79rVAStg",
+      "exr_41n2hG8sPtFPPKJ5",
+      "exr_41n2hoVGJ58hzGjr",
+      "exr_41n2hTCC2kTRQECq",
+      "exr_41n2habfAGU8KHRR",
+      "exr_41n2hu4kRBiUHfti",
+      "exr_41n2hGNfhCnGAkBS",
+      "exr_41n2hgdqh4HknZFn"
+    ]
+  }
+}

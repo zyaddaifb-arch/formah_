@@ -12,8 +12,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Typography } from '@/constants/Colors';
 import { ThemedText } from './ThemedText';
 import { GridBackground, BlurGlow } from './VisualAccents';
-import { EXERCISE_INSTRUCTIONS } from '@/store/exerciseLibrary';
+import { EXERCISE_INSTRUCTIONS, EXERCISE_LIBRARY } from '@/store/exerciseLibrary';
 import { useWorkoutStore } from '@/store/workoutStore';
+import { Image } from 'expo-image';
+import exerciseMapping from '@/constants/exerciseMapping.json';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -90,7 +93,11 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
     history: exerciseHistory.length > 0 ? exerciseHistory : rawDetailsData?.history ?? DEFAULT_DETAILS.history,
   };
 
-  // Process data to replace 'kg' with global unit
+  // Get media data from mapping
+  const exerciseObj = EXERCISE_LIBRARY.find(e => e.name === exerciseName);
+  const mediaData = exerciseObj ? (exerciseMapping as any)[exerciseObj.id] : null;
+
+
   const data = {
     ...rawData,
     records: rawData.records.map(r => ({
@@ -100,8 +107,12 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
     history: rawData.history.map(h => ({
       ...h,
       summary: h.summary.replace(/\bkg\b/gi, globalUnit.toUpperCase())
-    }))
+    })),
+    instructions: mediaData?.instructions && mediaData.instructions.length > 0 
+      ? mediaData.instructions 
+      : rawData.instructions
   };
+
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
@@ -148,17 +159,23 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
           <ScrollView style={styles.contentScroll} showsVerticalScrollIndicator={false}>
             {activeTab === 'Instructions' && (
               <View style={styles.tabContent}>
-                {/* Illustration Placeholder */}
+                {/* Illustration / Media Container */}
                 <View style={styles.illustrationContainer}>
-                  <View style={styles.placeholderImg}>
-                    <MaterialCommunityIcons name="image-outline" size={64} color={Colors.outlineVariant} />
-                    <TouchableOpacity style={styles.playVideoBtn}>
-                      <View style={styles.videoBadge}>
-                        <MaterialCommunityIcons name="play" size={20} color={Colors.onPrimary} />
-                      </View>
-                    </TouchableOpacity>
-                  </View>
+                  {mediaData?.thumbnail ? (
+                    <Image 
+                      source={{ uri: mediaData.thumbnail }}
+                      style={styles.illustrationImage}
+                      contentFit="cover"
+                      transition={300}
+                    />
+                  ) : (
+                    <View style={styles.placeholderImg}>
+                      <MaterialCommunityIcons name="image-outline" size={64} color={Colors.outlineVariant} />
+                    </View>
+                  )}
                 </View>
+
+
 
                 <ThemedText type="headline" size={20} style={styles.sectionTitle}>Instructions</ThemedText>
                 
@@ -278,28 +295,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(225,228,249,0.05)'
   },
-  placeholderImg: {
+  illustrationImage: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  playVideoBtn: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-  },
-  videoBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 12,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Colors.primary,
-    shadowOpacity: 0.5,
-    shadowRadius: 8
+    width: '100%',
+    height: '100%',
   },
   sectionTitle: { marginBottom: 16 },
+
+
   instructionsContainer: { gap: 20 },
   instructionStep: { flexDirection: 'row' },
   stepNumberCol: { width: 28 },

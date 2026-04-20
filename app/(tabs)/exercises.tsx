@@ -16,6 +16,9 @@ import { GridBackground } from '../../components/VisualAccents';
 import { ExerciseDetailsModal } from '../../components/ExerciseDetailsModal';
 import { EXERCISE_LIBRARY } from '../../store/exerciseLibrary';
 import { LibraryExercise } from '../../store/types';
+import { Image } from 'expo-image';
+import exerciseMapping from '@/constants/exerciseMapping.json';
+
 
 export default function ExercisesScreen() {
   const insets = useSafeAreaInsets();
@@ -161,8 +164,18 @@ export default function ExercisesScreen() {
                 >
                   <View style={styles.itemLeft}>
                     <View style={styles.thumbnailBox}>
-                      <ThemedText type="headline" size={22} color={Colors.onSurface}>{item.name.charAt(0)}</ThemedText>
+                      {(exerciseMapping as any)[item.id]?.thumbnail ? (
+                        <Image 
+                          source={{ uri: (exerciseMapping as any)[item.id].thumbnail }}
+                          style={styles.thumbnailImage}
+                          contentFit="cover"
+                          transition={200}
+                        />
+                      ) : (
+                        <ThemedText type="headline" size={22} color={Colors.onSurface}>{item.name.charAt(0)}</ThemedText>
+                      )}
                     </View>
+
                     
                     <View style={styles.itemInfo}>
                       <ThemedText type="headline" size={16} color={Colors.onSurface}>{item.name}</ThemedText>
@@ -390,7 +403,13 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceContainerHighest,
     alignItems: 'center',
     justifyContent: 'center',
+    overflow: 'hidden',
   },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+  },
+
   itemInfo: {
     justifyContent: 'center',
     gap: 2
