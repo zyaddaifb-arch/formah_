@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,7 +13,6 @@ import { GridBackground, BlurGlow } from '@/components/VisualAccents';
 
 // Main Store & Hooks
 import { useWorkoutStore } from '@/store/workoutStore';
-import { useActiveTimer } from '@/hooks/workout/useActiveTimer';
 import { useLineTimers } from '@/hooks/workout/useLineTimers';
 import { useWorkoutActions } from '@/hooks/workout/useWorkoutActions';
 import { useRestTimer } from '@/hooks/workout/useRestTimer';
@@ -58,7 +57,6 @@ export default function ActiveWorkoutScreen() {
   const defaultRestTimer = useWorkoutStore(state => state.user.defaultRestTimer);
   
   // Custom Hooks
-  const elapsedTime = useActiveTimer(startTime);
   const { lineTimers, startLineTimer, cancelLineTimer, adjustLineTimer, skipLineTimer } = useLineTimers();
   const { handleFinish, handleCancel } = useWorkoutActions();
   // PERF: useRestTimer handles the 1s interval locally — does NOT write to the store every second.
@@ -70,6 +68,8 @@ export default function ActiveWorkoutScreen() {
   const [renameInput, setRenameInput] = useState('');
 
   // History Caching Logic
+  // PERF: Only rebuild history cache if the actual exercises change, not when sets are toggled.
+  const exerciseIdsKey = exercises.map(ex => ex.exerciseId).join(',');
   const previousExerciseCache = useMemo(() => {
     const cache: Record<string, { sets: any[], unit: string }> = {};
     
@@ -84,7 +84,34 @@ export default function ActiveWorkoutScreen() {
       }
     });
     return cache;
-  }, [exercises, history]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exerciseIdsKey, history]);
+
+  const handleLineTimerStart = useCallback((setId: string) => {
+    if (isRestTimerEnabled) {
+      const exercise = exercises.find(e => e.sets.some(s => s.id === setId));
+      const duration = exercise?.defaultRestTimer || defaultRestTimer;
+      startLineTimer(setId, duration);
+    }
+  }, [isRestTimerEnabled, exercises, defaultRestTimer, startLineTimer]);
+
+  const editorActions = useMemo(() => ({
+    addExercise: addExerciseToActive,
+    removeExercise: removeExerciseFromActive,
+    replaceExercise: replaceExerciseInActive,
+    reorderExercises: setExercisesOrderInActive,
+    addSet: addSetToExercise,
+    removeSet: removeSetFromExercise,
+    updateSet: updateSet,
+    toggleSetDone: toggleSetDone,
+    addNote: addExerciseNote,
+    updateNote: updateExerciseNote,
+    deleteNote: deleteExerciseNote,
+    updateTitle: () => setRenameModalVisible(true),
+    toggleWarmUpSets: toggleWarmUpSets,
+    updateWeightUnit: updateExerciseWeightUnit,
+    updateFocusMetric: updateExerciseFocusMetric,
+  }), [addExerciseToActive, removeExerciseFromActive, replaceExerciseInActive, setExercisesOrderInActive, addSetToExercise, removeSetFromExercise, updateSet, toggleSetDone, addExerciseNote, updateExerciseNote, deleteExerciseNote, toggleWarmUpSets, updateExerciseWeightUnit, updateExerciseFocusMetric]);
 
   if (!activeWorkoutId) {
     return (
@@ -122,36 +149,15 @@ export default function ActiveWorkoutScreen() {
           exercises={exercises}
           previousExerciseCache={previousExerciseCache}
           lineTimers={lineTimers}
-          onLineTimerStart={(setId) => {
-            if (isRestTimerEnabled) {
-              const exercise = exercises.find(e => e.sets.some(s => s.id === setId));
-              startLineTimer(setId, exercise?.defaultRestTimer || defaultRestTimer);
-            }
-          }}
+          onLineTimerStart={handleLineTimerStart}
           onLineTimerCancel={cancelLineTimer}
           onLineTimerAdjust={adjustLineTimer}
           onLineTimerSkip={skipLineTimer}
-          actions={{
-            addExercise: addExerciseToActive,
-            removeExercise: removeExerciseFromActive,
-            replaceExercise: replaceExerciseInActive,
-            reorderExercises: setExercisesOrderInActive,
-            addSet: addSetToExercise,
-            removeSet: removeSetFromExercise,
-            updateSet: updateSet,
-            toggleSetDone: toggleSetDone,
-            addNote: addExerciseNote,
-            updateNote: updateExerciseNote,
-            deleteNote: deleteExerciseNote,
-            updateTitle: () => setRenameModalVisible(true),
-            toggleWarmUpSets: toggleWarmUpSets,
-            updateWeightUnit: updateExerciseWeightUnit,
-            updateFocusMetric: updateExerciseFocusMetric,
-          }}
+          actions={editorActions}
           renderHeader={() => (
             <>
               <ActiveWorkoutHeader
-                elapsedTime={elapsedTime}
+                startTime={startTime}
                 isRestTimerActive={isRestTimerActive}
                 restTimerRemaining={restTimerRemaining}
                 restTimerTarget={restTimerTarget}

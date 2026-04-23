@@ -17,7 +17,6 @@ import { ThemedText } from '@/components/ThemedText';
 import { GridBackground, BlurGlow } from '@/components/VisualAccents';
 import { useRouter } from 'expo-router';
 import { supabase } from '@/utils/supabase';
-import { useWorkoutStore } from '@/store/workoutStore';
 import Animated, { 
   FadeInDown, 
   FadeInUp, 
@@ -100,12 +99,10 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       if (isLogin) {
-        useWorkoutStore.getState().reset();
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } else {
-        useWorkoutStore.getState().reset();
         const { data: { user }, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
@@ -116,9 +113,13 @@ export default function LoginScreen() {
         if (user) {
           const { error: profileError } = await supabase.from('profiles').insert([{ id: user.id, full_name: name }]);
           if (profileError) console.error('Error creating profile:', profileError);
-          
+
+          // Sign out the temporary unverified session so the layout doesn't
+          // redirect to home before the user confirms their email.
+          await supabase.auth.signOut();
+
           Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          Alert.alert('Success!', 'Please verify your email to log in.', [{ 
+          Alert.alert('Account Created!', 'Please check your email and verify your account before logging in.', [{ 
             text: 'OK', 
             onPress: () => {
               setIsLogin(true);

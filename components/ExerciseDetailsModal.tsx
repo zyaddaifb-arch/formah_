@@ -66,7 +66,7 @@ interface ExerciseDetailsModalProps {
 
 
 export function ExerciseDetailsModal({ visible, exerciseName, onClose }: ExerciseDetailsModalProps) {
-  const [activeTab, setActiveTab] = useState<'Instructions' | 'History' | 'Bests'>('Instructions');
+  const [activeTab, setActiveTab] = useState<'Instructions' | 'History'>('Instructions');
   const globalUnit = useWorkoutStore(state => state.user.weightUnit);
   const allHistory = useWorkoutStore(state => state.history);
   
@@ -139,7 +139,7 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
 
           {/* Custom Tab Bar */}
           <View style={styles.tabBar}>
-            {(['Instructions', 'History', 'Bests'] as const).map((tab) => (
+            {(['Instructions', 'History'] as const).map((tab) => (
               <TouchableOpacity 
                 key={tab} 
                 style={[styles.tabItem, activeTab === tab && styles.tabItemActive]}
@@ -208,19 +208,7 @@ export function ExerciseDetailsModal({ visible, exerciseName, onClose }: Exercis
               </View>
             )}
 
-            {activeTab === 'Bests' && (
-              <View style={styles.tabContent}>
-                 <ThemedText type="headline" size={18} style={styles.sectionTitle}>Bests & Records</ThemedText>
-                 <View style={styles.recordsGrid}>
-                   {data.records.map((rec, idx) => (
-                     <View key={idx} style={styles.recordCard}>
-                       <ThemedText type="label" size={12} color={Colors.onSurfaceVariant}>{rec.label}</ThemedText>
-                       <ThemedText type="headline" size={20} color={Colors.primary}>{rec.value}</ThemedText>
-                     </View>
-                   ))}
-                 </View>
-              </View>
-            )}
+
             
             <View style={{ height: 40 }} />
           </ScrollView>
@@ -313,16 +301,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.surfaceContainerHigh, 
     padding: 16, 
     borderRadius: 20,
-    gap: 4,
-    borderWidth: 1,
-    borderColor: 'rgba(225,228,249,0.05)'
-  },
-  
-  recordsGrid: { gap: 16 },
-  recordCard: {
-    backgroundColor: Colors.surfaceContainerHigh,
-    padding: 20,
-    borderRadius: 24,
     gap: 4,
     borderWidth: 1,
     borderColor: 'rgba(225,228,249,0.05)'

@@ -38,8 +38,8 @@ export default function ExercisesScreen() {
   // Custom Exercise Modal State
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [customName, setCustomName] = useState('');
-  const [customBodyPart, setCustomBodyPart] = useState('Core');
-  const [customCategory, setCustomCategory] = useState('Barbell');
+  const [customBodyPart, setCustomBodyPart] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [customCategoryPickerVisible, setCustomCategoryPickerVisible] = useState(false);
   const [selectedDetailName, setSelectedDetailName] = useState<string | null>(null);
 
@@ -56,7 +56,7 @@ export default function ExercisesScreen() {
   };
 
   const submitCustomExercise = () => {
-    if (!customName.trim() || !customCategory) return;
+    if (!customName.trim() || !customCategory || !customBodyPart) return;
     const custom: LibraryExercise = {
       id: 'custom_' + Date.now(),
       name: customName,
@@ -119,8 +119,7 @@ export default function ExercisesScreen() {
           <View style={[styles.headerRow, { paddingTop: Math.max(insets.top, 16) }]}>
             <ThemedText type="headline" size={24} color={Colors.primary}>Exercise Library</ThemedText>
             <TouchableOpacity onPress={handleNewExercise} style={{ alignItems: 'flex-end' }}>
-              <ThemedText type="headline" size={16} color={Colors.primary}>Create</ThemedText>
-              <ThemedText type="headline" size={16} color={Colors.primary}>Custom</ThemedText>
+              <ThemedText type="headline" size={16} color={Colors.primary}>New</ThemedText>
             </TouchableOpacity>
           </View>
 
@@ -208,7 +207,7 @@ export default function ExercisesScreen() {
                   style={styles.emptyStateBtn} 
                   onPress={handleNewExercise}
                 >
-                  <ThemedText type="headline" size={14} color={Colors.onPrimary}>Create Custom Exercise</ThemedText>
+                  <ThemedText type="headline" size={14} color={Colors.onPrimary}>New</ThemedText>
                 </TouchableOpacity>
               </View>
             )}
@@ -254,8 +253,8 @@ export default function ExercisesScreen() {
                   <MaterialCommunityIcons name="close" size={20} color={Colors.onSurface} />
                 </TouchableOpacity>
                 <ThemedText type="headline" size={18}>Create New Exercise</ThemedText>
-                <TouchableOpacity onPress={submitCustomExercise} disabled={!customName.trim() || !customCategory}>
-                  <ThemedText type="headline" size={16} color={(customName.trim() && customCategory) ? Colors.onSurface : Colors.onSurfaceVariant}>Save</ThemedText>
+                <TouchableOpacity onPress={submitCustomExercise} disabled={!customName.trim() || !customCategory || !customBodyPart}>
+                  <ThemedText type="headline" size={16} color={(customName.trim() && customCategory && customBodyPart) ? Colors.onSurface : Colors.onSurfaceVariant}>Save</ThemedText>
                 </TouchableOpacity>
               </View>
 
@@ -426,7 +425,7 @@ const styles = StyleSheet.create({
     minWidth: 32,
     height: 32,
   },
-  pickerOverlay: { backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  pickerOverlay: { backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 20, zIndex: 20 },
   pickerContent: { backgroundColor: Colors.surfaceContainerHigh, width: '100%', borderRadius: 24, padding: 20 },
   pickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   pickerItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: Colors.surfaceVariant },

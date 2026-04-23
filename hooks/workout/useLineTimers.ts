@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 export type LineTimer = {
   endTimestamp: number; // Unix ms when timer expires
@@ -61,7 +61,7 @@ export const useLineTimers = () => {
     };
   }, [anyActive]);
 
-  const startLineTimer = (setId: string, duration: number = 60) => {
+  const startLineTimer = useCallback((setId: string, duration: number = 60) => {
     setLineTimers(prev => {
       const updated: Record<string, LineTimer> = {};
       // Keep done timers, discard other running timers
@@ -75,17 +75,17 @@ export const useLineTimers = () => {
       };
       return updated;
     });
-  };
+  }, []);
 
-  const cancelLineTimer = (setId: string) => {
+  const cancelLineTimer = useCallback((setId: string) => {
     setLineTimers(prev => {
       const next = { ...prev };
       delete next[setId];
       return next;
     });
-  };
+  }, []);
 
-  const adjustLineTimer = (setId: string, offset: number) => {
+  const adjustLineTimer = useCallback((setId: string, offset: number) => {
     setLineTimers(prev => {
       if (!prev[setId]) return prev;
       return {
@@ -96,9 +96,9 @@ export const useLineTimers = () => {
         },
       };
     });
-  };
+  }, []);
 
-  const skipLineTimer = (setId: string) => {
+  const skipLineTimer = useCallback((setId: string) => {
     setLineTimers(prev => {
       if (!prev[setId]) return prev;
       // Force end immediately
@@ -107,7 +107,7 @@ export const useLineTimers = () => {
         [setId]: { ...prev[setId], endTimestamp: Date.now() - 1 },
       };
     });
-  };
+  }, []);
 
   return {
     lineTimers: derivedTimers, // backward-compat shape for consumers

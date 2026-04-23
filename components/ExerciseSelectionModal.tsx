@@ -54,8 +54,8 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
   // Custom Exercise Modal State
   const [createModalVisible, setCreateModalVisible] = useState(false);
   const [customName, setCustomName] = useState('');
-  const [customBodyPart, setCustomBodyPart] = useState('Core');
-  const [customCategory, setCustomCategory] = useState('Barbell');
+  const [customBodyPart, setCustomBodyPart] = useState('');
+  const [customCategory, setCustomCategory] = useState('');
   const [customCategoryPickerVisible, setCustomCategoryPickerVisible] = useState(false);
   const [selectedDetailName, setSelectedDetailName] = useState<string | null>(null);
 
@@ -102,7 +102,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
   };
 
   const submitCustomExercise = () => {
-    if (!customName.trim() || !customCategory) return;
+    if (!customName.trim() || !customCategory || !customBodyPart) return;
     const custom: LibraryExercise = {
       id: 'custom_' + Date.now(),
       name: customName,
@@ -298,7 +298,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                    style={styles.emptyStateBtn} 
                    onPress={handleNewExercise}
                 >
-                  <ThemedText type="headline" size={14} color={Colors.onPrimary}>Create Custom Exercise</ThemedText>
+                  <ThemedText type="headline" size={14} color={Colors.onPrimary}>New</ThemedText>
                 </TouchableOpacity>
               </View>
             )}
@@ -347,8 +347,8 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                   <MaterialCommunityIcons name="close" size={20} color={Colors.onSurface} />
                 </TouchableOpacity>
                 <ThemedText type="headline" size={18}>Create New Exercise</ThemedText>
-                <TouchableOpacity onPress={submitCustomExercise} disabled={!customName.trim() || !customCategory}>
-                  <ThemedText type="headline" size={16} color={(customName.trim() && customCategory) ? Colors.onSurface : Colors.onSurfaceVariant}>Save</ThemedText>
+                <TouchableOpacity onPress={submitCustomExercise} disabled={!customName.trim() || !customCategory || !customBodyPart}>
+                  <ThemedText type="headline" size={16} color={(customName.trim() && customCategory && customBodyPart) ? Colors.onSurface : Colors.onSurfaceVariant}>Save</ThemedText>
                 </TouchableOpacity>
               </View>
 
@@ -547,7 +547,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center'
   },
-  pickerOverlay: { backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 20 },
+  pickerOverlay: { backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 20, zIndex: 20 },
   pickerContent: { backgroundColor: Colors.surfaceContainerHigh, width: '100%', borderRadius: 24, padding: 20 },
   pickerHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   pickerItem: { paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: Colors.surfaceVariant },

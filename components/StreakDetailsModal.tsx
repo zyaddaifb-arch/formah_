@@ -6,13 +6,15 @@ import {
   TouchableOpacity, 
   Dimensions,
   Animated,
-  PanResponder
+  PanResponder,
+  ScrollView
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
 import { ThemedText } from './ThemedText';
 import { BlurView } from 'expo-blur';
 import { StreakData } from '../utils/streak';
+import { useWorkoutStore } from '../store/workoutStore';
 
 const { height, width } = Dimensions.get('window');
 
@@ -25,6 +27,10 @@ interface Props {
 export const StreakDetailsModal: React.FC<Props> = ({ visible, onClose, data }) => {
   const scaleAnim = React.useRef(new Animated.Value(0.8)).current;
   const opacityAnim = React.useRef(new Animated.Value(0)).current;
+
+  const user = useWorkoutStore(state => state.user);
+  const updateUser = useWorkoutStore(state => state.updateUser);
+  const folders = useWorkoutStore(state => state.folders);
 
   React.useEffect(() => {
     if (visible) {
@@ -57,9 +63,6 @@ export const StreakDetailsModal: React.FC<Props> = ({ visible, onClose, data }) 
     }
   }, [visible]);
 
-  const days = ['S', 'S', 'M', 'T', 'W', 'T', 'F'];
-  const dayNames = ['SAT', 'SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI'];
-
   return (
     <Modal
       visible={visible}
@@ -89,7 +92,7 @@ export const StreakDetailsModal: React.FC<Props> = ({ visible, onClose, data }) 
                <View style={styles.fireGlow} />
             </View>
             <ThemedText type="headline" size={48} color={Colors.primary}>{data.currentStreak}</ThemedText>
-            <ThemedText type="headline" size={20} style={styles.title}>WEEKLY STREAK</ThemedText>
+            <ThemedText type="headline" size={20} style={styles.title}>{data.streakTitle}</ThemedText>
           </View>
 
           <View style={styles.statsRow}>
@@ -108,18 +111,18 @@ export const StreakDetailsModal: React.FC<Props> = ({ visible, onClose, data }) 
 
           <View style={styles.calendarSection}>
              <View style={styles.weekGrid}>
-                {days.map((day, i) => (
+                {data.progressDots.map((dot, i) => (
                   <View key={i} style={styles.dayColumn}>
                     <View style={[
                       styles.dayIndicator, 
-                      data.weeklyActivity[i] ? styles.dayIndicatorActive : styles.dayIndicatorInactive
+                      dot.completed ? styles.dayIndicatorActive : styles.dayIndicatorInactive
                     ]}>
-                      {data.weeklyActivity[i] && (
-                        <MaterialCommunityIcons name="fire" size={12} color={Colors.onPrimary} />
+                      {dot.completed && (
+                        <MaterialCommunityIcons name="check" size={16} color={Colors.onPrimary} />
                       )}
                     </View>
-                    <ThemedText type="label" size={8} color={data.weeklyActivity[i] ? Colors.primary : Colors.onSurfaceVariant}>
-                        {dayNames[i]}
+                    <ThemedText type="label" size={8} color={dot.completed ? Colors.primary : Colors.onSurfaceVariant}>
+                        {dot.label}
                     </ThemedText>
                   </View>
                 ))}

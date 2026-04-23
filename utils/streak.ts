@@ -1,4 +1,4 @@
-import { WorkoutSession } from '../store/types';
+import { WorkoutSession, UserData, WorkoutTemplate, WorkoutFolder } from '../store/types';
 import { 
   startOfDay, 
   isSameDay, 
@@ -12,104 +12,143 @@ import {
 export interface StreakData {
   currentStreak: number;
   longestStreak: number;
-  weeklyActivity: boolean[]; // Sat to Fri (7 days)
+  progressDots: { label: string; completed: boolean; id?: string }[];
   momentumScore: number; // 0-100
+  streakTitle: string;
+  streakSubtitle: string;
+  type: 'daily' | 'folder';
+  folderId?: string;
 }
 
 /**
- * Calculates streak data from workout history.
- * Week starts on Saturday as per user request.
+ * Calculates streak data based on "My Schedule" (uncategorized templates).
+ * Week starts on Saturday.
  */
-export const calculateStreakData = (history: WorkoutSession[]): StreakData => {
-  if (history.length === 0) {
+export const calculateStreakData = (
+  history: WorkoutSession[],
+  user: UserData,
+  templates: WorkoutTemplate[],
+  folders: WorkoutFolder[]
+): StreakData => {
+  // Epoch to zero out old data before this feature implementation
+  const STREAK_EPOCH = 1713830000000; 
+
+  const now = new Date();
+  const startOfThisWeek = startOfWeek(now, { weekStartsOn: 6 });
+
+  // 1. Get Target Templates ("My Schedule" / Uncategorized)
+  const targetTemplates = templates.filter(t => !t.folderId && !t.isArchived);
+  
+  // If there are no target templates, streak is 0
+  if (targetTemplates.length === 0) {
     return {
       currentStreak: 0,
       longestStreak: 0,
-      weeklyActivity: new Array(7).fill(false),
+      progressDots: [{ label: '-', completed: false }],
       momentumScore: 0,
+      streakTitle: 'WEEKLY STREAK',
+      streakSubtitle: 'ADD A TEMPLATE TO SCHEDULE',
+      type: 'folder'
     };
   }
 
-  // Sort history by startTime descending (newest first)
-  const sortedHistory = [...history].sort((a, b) => b.startTime - a.startTime);
-  const now = new Date();
-  const today = startOfDay(now);
+  // 2. Filter History
+  // Only keep history after the epoch AND where the template matches one of our target templates
+  const targetTemplateIds = new Set(targetTemplates.map(t => t.id));
+  const relevantHistory = history.filter(s => 
+    s.startTime >= STREAK_EPOCH && 
+    s.templateId && 
+    targetTemplateIds.has(s.templateId)
+  );
 
-  // 1. Calculate Current Streak
+  // 3. Calculate Streak
   let currentStreak = 0;
-  let checkDate = today;
-  let historyIndex = 0;
+  let longestStreak = 0;
 
-  // Find if there's a workout today
-  const hasWorkoutToday = sortedHistory.some(s => isSameDay(new Date(s.startTime), today));
-  
-  // If no workout today, check if the streak is still alive (last workout was yesterday)
-  const yesterday = subDays(today, 1);
-  const hasWorkoutYesterday = sortedHistory.some(s => isSameDay(new Date(s.startTime), yesterday));
+  if (relevantHistory.length > 0) {
+    // Group history by week
+    const weeks = new Map<number, Set<string>>(); // weekStart -> set of templateIds completed
+    for (const session of relevantHistory) {
+      const wStart = startOfWeek(new Date(session.startTime), { weekStartsOn: 6 }).getTime();
+      if (!weeks.has(wStart)) weeks.set(wStart, new Set());
+      weeks.get(wStart)!.add(session.templateId!);
+    }
 
-  if (!hasWorkoutToday && !hasWorkoutYesterday) {
-    // Check if it's been more than 7 days since last workout for a full reset?
-    // Actually standard streak resets if you miss a day. 
-    // But user said "إذا مر أسبوع من غير ما يتمرن، الاستريت يروح" 
-    // which might mean a "Soft Streak" or a "Weekly Streak".
-    // However, usually streaks ARE daily. Let's stick to daily but 
-    // verify the last workout wasn't > 7 days ago for the "reset" rule.
-    const lastWorkout = new Date(sortedHistory[0].startTime);
-    if (differenceInCalendarDays(today, lastWorkout) >= 7) {
+    const weekStarts = Array.from(weeks.keys()).sort();
+    let currentRun = 0;
+
+    for (let i = 0; i < weekStarts.length; i++) {
+      const wStart = weekStarts[i];
+      const completedTemplates = weeks.get(wStart)!;
+      
+      // Did they complete the ENTIRE schedule this week?
+      const isWeekSuccessful = targetTemplates.every(t => completedTemplates.has(t.id));
+
+      if (i > 0) {
+        const prevStart = weekStarts[i - 1];
+        const diffWeeks = Math.round((wStart - prevStart) / (7 * 24 * 60 * 60 * 1000));
+        if (diffWeeks > 1) {
+          // Gap of >1 week => broken streak
+          currentRun = 0;
+        }
+      }
+
+      if (isWeekSuccessful) {
+        currentRun += 1;
+        if (currentRun > longestStreak) longestStreak = currentRun;
+      } else {
+        // If it's a PAST week and it wasn't successful, it breaks the streak.
+        // If it's the CURRENT week, it hasn't broken yet (they still have time).
+        if (wStart < startOfThisWeek.getTime()) {
+           currentRun = 0;
+        }
+      }
+    }
+
+    // Check if the streak was broken by missing the PREVIOUS week entirely
+    const lastWorkoutWeek = weekStarts[weekStarts.length - 1];
+    const diffToNow = Math.round((startOfThisWeek.getTime() - lastWorkoutWeek) / (7 * 24 * 60 * 60 * 1000));
+    
+    if (diffToNow > 1) {
+      // Missing last week completely breaks the streak
       currentStreak = 0;
     } else {
-      // If we are within 7 days, maybe the streak is still the number of days we've done?
-      // Re-reading: "لما يلعب تمرين، تقوم مزود الستريك"
-      // "إذا مر أسبوع من غير ما يتمرن، الاستريت يروح"
-      // This implies it's a count of SESSIONS or DAYS, but only resets if a week is missed.
-      // Let's count TOTAL DAYS with workouts, but reset if gap > 7 days.
-      currentStreak = sortedHistory.length; // Simplified for now: total sessions? 
-      // No, let's count unique days with workouts.
-      const uniqueDays = new Set(sortedHistory.map(s => startOfDay(new Date(s.startTime)).getTime()));
-      currentStreak = uniqueDays.size;
+      currentStreak = currentRun;
     }
-  } else {
-    // Streak is active. Count unique days with workouts.
-    const uniqueDays = new Set(sortedHistory.map(s => startOfDay(new Date(s.startTime)).getTime()));
-    currentStreak = uniqueDays.size;
   }
 
-  // 2. Longest Streak
-  // For now, if we don't persist it, we calculate from history.
-  // Since we don't have gaps-based reset logic yet other than the 7-day rule,
-  // longest streak is just current if it's the max we've seen? 
-  // Let's just return currentStreak as dummy for now or count historical streaks.
-  const longestStreak = currentStreak; // Placeholder
-
-  // 3. Weekly Activity (Sat to Fri)
-  // Saturday is index 6 in default date-fns (0=Sun, 1=Mon... 6=Sat)
-  // We want: [Sat, Sun, Mon, Tue, Wed, Thu, Fri]
-  const weeklyActivity = new Array(7).fill(false);
+  // 4. Progress Dots for CURRENT week
+  const workoutsThisWeek = relevantHistory.filter(s => s.startTime >= startOfThisWeek.getTime());
   
-  // Find the start of the week (Saturday)
-  // date-fns startOfWeek(date, { weekStartsOn: 6 }) gives the most recent Saturday.
-  const startOfThisWeek = startOfWeek(now, { weekStartsOn: 6 });
-  
-  for (let i = 0; i < 7; i++) {
-    const dayDate = addDays(startOfThisWeek, i);
-    weeklyActivity[i] = sortedHistory.some(s => isSameDay(new Date(s.startTime), dayDate));
-  }
+  const progressDots = targetTemplates.map(t => {
+    const completed = workoutsThisWeek.some(w => w.templateId === t.id);
+    const words = t.title.trim().split(/\s+/);
+    let label = words.slice(0, 2).map(w => w[0]?.toUpperCase()).join('').substring(0, 2);
+    if (!label) label = 'T';
+    return {
+      label,
+      completed,
+      id: t.id
+    };
+  });
 
-  // 4. Momentum Score
-  // Percentage of active days in the last 30 days.
-  const thirtyDaysAgo = subDays(today, 30);
+  // 5. Momentum Score (percentage of target templates completed in last 30 days vs expected)
+  const thirtyDaysAgo = subDays(startOfDay(now), 30).getTime();
   const activeDaysInLast30 = new Set(
-    sortedHistory
-      .filter(s => s.startTime >= thirtyDaysAgo.getTime())
+    relevantHistory
+      .filter(s => s.startTime >= thirtyDaysAgo)
       .map(s => startOfDay(new Date(s.startTime)).getTime())
   ).size;
-  
-  const momentumScore = Math.min(100, Math.round((activeDaysInLast30 / 30) * 100));
+  // Rough estimate: 12 workouts a month is 100% momentum
+  const momentumScore = Math.min(100, Math.round((activeDaysInLast30 / 12) * 100));
 
   return {
     currentStreak,
     longestStreak,
-    weeklyActivity,
+    progressDots,
     momentumScore,
+    streakTitle: 'WEEKLY STREAK',
+    streakSubtitle: 'SCHEDULE COMPLETION',
+    type: 'folder'
   };
 };

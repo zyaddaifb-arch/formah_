@@ -60,7 +60,7 @@ export default function HomeScreen() {
 
   const [streakModalVisible, setStreakModalVisible] = React.useState(false);
 
-  const streakData = React.useMemo(() => calculateStreakData(history), [history]);
+  const streakData = React.useMemo(() => calculateStreakData(history, user, templates, folders), [history, user, templates, folders]);
   const streakDays = streakData.currentStreak;
 
   const handleStartWorkout = () => {
@@ -276,25 +276,25 @@ export default function HomeScreen() {
             />
           </View>
           <View>
-            <ThemedText type="label" size={10} color={Colors.onSurfaceVariant} style={styles.trackingWidest}>CURRENT MOMENTUM</ThemedText>
+            <ThemedText type="label" size={10} color={Colors.onSurfaceVariant} style={styles.trackingWidest}>{streakData.streakSubtitle}</ThemedText>
             <View style={styles.streakMain}>
               <ThemedText type="headline" size={60} color={streakDays > 0 ? Colors.primary : Colors.onSurfaceVariant}>{streakDays}</ThemedText>
-              <ThemedText type="headline" size={24} style={styles.streakLabel}>WEEKLY STREAK</ThemedText>
+              <ThemedText type="headline" size={24} style={styles.streakLabel}>{streakData.streakTitle}</ThemedText>
             </View>
           </View>
           <View style={styles.streakFooter}>
             <View style={styles.weekDots}>
-              {['S', 'S', 'M', 'T', 'W', 'T', 'F'].map((day, i) => (
+              {streakData.progressDots.map((dot, i) => (
                 <View key={i} style={[
                   styles.dayDot, 
-                  streakData.weeklyActivity[i] ? styles.dayDotActive : styles.dayDotInactive
+                  dot.completed ? styles.dayDotActive : styles.dayDotInactive
                 ]}>
                   <ThemedText 
                     type="headline" 
                     size={10} 
-                    color={streakData.weeklyActivity[i] ? Colors.onPrimary : Colors.onSurfaceVariant}
+                    color={dot.completed ? Colors.onPrimary : Colors.onSurfaceVariant}
                   >
-                    {day}
+                    {dot.label}
                   </ThemedText>
                 </View>
               ))}
@@ -352,7 +352,7 @@ export default function HomeScreen() {
             {/* Uncategorized Templates */}
             {renderTemplateList(
               templates.filter(t => !t.folderId && !t.isArchived),
-              'My Templates',
+              'My Schedule',
               true
             )}
 

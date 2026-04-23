@@ -4,10 +4,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import { formatRestTime } from '@/utils/workout';
+import { useActiveTimer } from '@/hooks/workout/useActiveTimer';
 import { styles } from './styles';
 
 interface ActiveWorkoutHeaderProps {
-  elapsedTime: string;
+  startTime?: number;
   isRestTimerActive: boolean;
   restTimerRemaining: number;
   restTimerTarget: number;
@@ -17,7 +18,7 @@ interface ActiveWorkoutHeaderProps {
 }
 
 export const ActiveWorkoutHeader: React.FC<ActiveWorkoutHeaderProps> = ({
-  elapsedTime,
+  startTime,
   isRestTimerActive,
   restTimerRemaining,
   restTimerTarget,
@@ -25,6 +26,8 @@ export const ActiveWorkoutHeader: React.FC<ActiveWorkoutHeaderProps> = ({
   onFinishPress,
   onMinimizePress,
 }) => {
+  const elapsedTime = useActiveTimer(startTime);
+
   return (
     <View style={styles.header}>
       <View style={styles.headerLeft}>

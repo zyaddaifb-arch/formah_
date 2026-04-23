@@ -252,6 +252,41 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = memo(({
       )}
     </View>
   );
+}, (prev, next) => {
+  // Primitive and simple checks
+  if (prev.condensed !== next.condensed) return false;
+  if (prev.isTemplateMode !== next.isTemplateMode) return false;
+
+  // Object checks
+  if (prev.exercise !== next.exercise) return false;
+  if (prev.previousData !== next.previousData) return false;
+
+  // Check if openSwipeRowId affects THIS exercise
+  if (prev.openSwipeRowId !== next.openSwipeRowId) {
+    const hasPrevOpen = prev.exercise.sets.some(s => s.id === prev.openSwipeRowId) || prev.exercise.notes?.some(n => n.id === prev.openSwipeRowId);
+    const hasNextOpen = next.exercise.sets.some(s => s.id === next.openSwipeRowId) || next.exercise.notes?.some(n => n.id === next.openSwipeRowId);
+    if (hasPrevOpen || hasNextOpen) return false;
+  }
+
+  // Check if invalidSets changed for THIS exercise
+  for (const set of next.exercise.sets) {
+    const prevInvalid = prev.invalidSets[set.id];
+    const nextInvalid = next.invalidSets[set.id];
+    if (prevInvalid?.weight !== nextInvalid?.weight) return false;
+    if (prevInvalid?.reps !== nextInvalid?.reps) return false;
+  }
+
+  // For lineTimers, only re-render if the timers for THIS exercise's sets have changed
+  for (const set of next.exercise.sets) {
+    const prevTimer = prev.lineTimers[set.id];
+    const nextTimer = next.lineTimers[set.id];
+    if (prevTimer?.remaining !== nextTimer?.remaining) return false;
+    if (prevTimer?.done !== nextTimer?.done) return false;
+  }
+
+  // We intentionally ignore function props (onToggleSet, onAddSet, etc.) 
+  // because they are recreated inline but carry the same logical closure.
+  return true;
 });
 
 ExerciseCard.displayName = 'ExerciseCard';

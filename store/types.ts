@@ -87,6 +87,8 @@ export interface UserData {
   isRestTimerEnabled: boolean;
   defaultRestTimer: number; // in seconds
   customExercises?: LibraryExercise[];
+  streakGoalType?: 'daily' | 'folder';
+  streakGoalFolderId?: string; // "uncategorized" or folder id
 }
 
 export interface WorkoutState {
