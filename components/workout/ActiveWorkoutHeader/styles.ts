@@ -11,17 +11,17 @@ export const styles = StyleSheet.create({
     zIndex: 10,
   },
   headerLeft: {
-    flex: 1,
+    flex: 1.2,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
   headerCenter: {
-    flex: 2,
+    flex: 2.5,
     alignItems: 'center',
   },
   headerRight: {
-    flex: 1,
+    flex: 0.8,
     alignItems: 'flex-end',
   },
   restTimer: {

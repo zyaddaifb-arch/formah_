@@ -86,6 +86,7 @@ export interface UserData {
   hasSeenOnboarding: boolean;
   isRestTimerEnabled: boolean;
   defaultRestTimer: number; // in seconds
+  customExercises?: LibraryExercise[];
 }
 
 export interface WorkoutState {
@@ -169,6 +170,7 @@ export interface UserActions {
   updateUser: (data: Partial<UserData>, shouldSync?: boolean) => void;
   setWeightUnit: (unit: 'kg' | 'lb') => void;
   completeOnboarding: () => void;
+  addCustomExercise: (exercise: LibraryExercise) => void;
 }
 
 export interface FolderActions {

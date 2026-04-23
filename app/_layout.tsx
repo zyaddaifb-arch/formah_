@@ -1,8 +1,8 @@
 import 'react-native-gesture-handler';
+import { View, ActivityIndicator, AppState, AppStateStatus } from 'react-native';
 import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts, SpaceGrotesk_700Bold, SpaceGrotesk_500Medium, SpaceGrotesk_400Regular } from '@expo-google-fonts/space-grotesk';
 import { Manrope_400Regular, Manrope_700Bold, Manrope_500Medium } from '@expo-google-fonts/manrope';
-import { View, ActivityIndicator, AppState, AppStateStatus } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';

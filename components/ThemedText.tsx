@@ -17,6 +17,8 @@ export function ThemedText({
   children, 
   ...rest 
 }: ThemedTextProps) {
+  const content = children;
+
   return (
     <Text 
       style={[
@@ -27,7 +29,7 @@ export function ThemedText({
       ]} 
       {...rest}
     >
-      {children}
+      {content}
     </Text>
   );
 }

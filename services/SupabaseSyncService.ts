@@ -179,9 +179,18 @@ class SyncService {
           templateIds: templates?.filter(t => t.folder_id === f.id).map(t => t.id) || [],
           createdAt: new Date(f.created_at).getTime(),
         }));
-        // Only update if data actually changed
-        if (JSON.stringify(mappedFolders) !== JSON.stringify(currentState.folders)) {
-          useWorkoutStore.setState({ folders: mappedFolders });
+        
+        // MERGE: Keep local folders that aren't in cloud yet (client-side only) 
+        // but are NOT in the queue for deletion.
+        const mergedFolders = [...mappedFolders];
+        currentState.folders.forEach(localF => {
+          if (!mappedFolders.find(f => f.id === localF.id)) {
+            mergedFolders.push(localF);
+          }
+        });
+
+        if (JSON.stringify(mergedFolders) !== JSON.stringify(currentState.folders)) {
+          useWorkoutStore.setState({ folders: mergedFolders });
         }
       }
 
@@ -198,8 +207,16 @@ class SyncService {
           folderId: t.folder_id,
           isArchived: t.is_archived,
         }));
-        if (JSON.stringify(mappedTemplates) !== JSON.stringify(currentState.templates)) {
-          useWorkoutStore.setState({ templates: mappedTemplates });
+
+        const mergedTemplates = [...mappedTemplates];
+        currentState.templates.forEach(localT => {
+          if (!mappedTemplates.find(t => t.id === localT.id)) {
+            mergedTemplates.push(localT);
+          }
+        });
+
+        if (JSON.stringify(mergedTemplates) !== JSON.stringify(currentState.templates)) {
+          useWorkoutStore.setState({ templates: mergedTemplates });
         }
       }
 
@@ -213,8 +230,19 @@ class SyncService {
           totalVolume: h.total_volume,
           exercises: h.exercises || [],
         }));
-        if (JSON.stringify(mappedHistory) !== JSON.stringify(currentState.history)) {
-          useWorkoutStore.setState({ history: mappedHistory });
+
+        const mergedHistory = [...mappedHistory];
+        currentState.history.forEach(localH => {
+          if (!mappedHistory.find(h => h.id === localH.id)) {
+            mergedHistory.push(localH);
+          }
+        });
+        
+        // Sort by start time descending
+        mergedHistory.sort((a, b) => b.startTime - a.startTime);
+
+        if (JSON.stringify(mergedHistory) !== JSON.stringify(currentState.history)) {
+          useWorkoutStore.setState({ history: mergedHistory });
         }
       }
     } catch (e) {

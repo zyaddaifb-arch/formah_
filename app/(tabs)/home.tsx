@@ -118,7 +118,7 @@ export default function HomeScreen() {
     const latest = pastWorkouts[0];
     const daysAgo = Math.floor((Date.now() - latest.startTime) / (1000 * 60 * 60 * 24));
     if (daysAgo === 0) return 'Today';
-    return `${daysAgo}d ago`;
+    return `${daysAgo} days ago`;
   };
 
   const renderTemplate = ({ item }: { item: any }) => (
@@ -149,7 +149,9 @@ export default function HomeScreen() {
           </View>
           <View style={styles.metaItem}>
             <MaterialCommunityIcons name="format-list-bulleted" size={12} color={Colors.onSurfaceVariant} />
-            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{item.exercises?.length || 0} Ex.</ThemedText>
+            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>
+              {item.exercises?.length || 0} Ex.
+            </ThemedText>
           </View>
         </View>
         <View style={styles.addExerciseBtn}>
@@ -227,13 +229,20 @@ export default function HomeScreen() {
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={[styles.greetingSection, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }]}>
-          <View>
+          <View style={{ flex: 1, paddingRight: 16 }}>
             <ThemedText type="label" size={12} color={Colors.primary} style={styles.trackingWidest}>WELCOME BACK</ThemedText>
-            <ThemedText type="headline" size={36} color={Colors.onSurface} style={styles.greetingTitle}>{user.name}</ThemedText>
+            <ThemedText type="headline" size={36} color={Colors.onSurface} style={styles.greetingTitle} numberOfLines={1}>{user.name}</ThemedText>
           </View>
-          <TouchableOpacity onPress={() => router.push('/profile')} style={styles.iconBtn}>
-            <MaterialCommunityIcons name="account-circle-outline" size={24} color={Colors.primary} />
-          </TouchableOpacity>
+          <View style={styles.profileImageContainer}>
+            <TouchableOpacity onPress={() => router.push('/profile')} style={styles.profileBtn}>
+              {user.avatarUri ? (
+                <Image source={{ uri: user.avatarUri }} style={styles.avatarImage} />
+              ) : (
+                <MaterialCommunityIcons name="account-circle-outline" size={36} color={Colors.primary} />
+              )}
+            </TouchableOpacity>
+            <View style={styles.profileStatusDot} />
+          </View>
         </View>
 
         <TouchableOpacity 
@@ -290,7 +299,9 @@ export default function HomeScreen() {
                 </View>
               ))}
             </View>
-            <ThemedText type="body" size={11} color={Colors.onSurfaceVariant}>Keep it up, {user.name.split(' ')[0]}.</ThemedText>
+            <ThemedText type="body" size={11} color={Colors.onSurfaceVariant}>
+                Keep it up, {user.name.split(' ')[0]}.
+            </ThemedText>
           </View>
         </TouchableOpacity>
 
@@ -341,7 +352,7 @@ export default function HomeScreen() {
             {/* Uncategorized Templates */}
             {renderTemplateList(
               templates.filter(t => !t.folderId && !t.isArchived),
-              "My Templates",
+              'My Templates',
               true
             )}
 
@@ -520,6 +531,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: 'rgba(67, 71, 88, 0.2)',
+  },
+  profileImageContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  profileBtn: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: Colors.surfaceContainerHigh,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    padding: 2, // Space for a double-border effect
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 15,
+    elevation: 10,
+  },
+  profileStatusDot: {
+    position: 'absolute',
+    bottom: 2,
+    right: 2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#4CAF50',
+    borderWidth: 2,
+    borderColor: Colors.background,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 34,
   },
   templatesSection: { marginHorizontal: -24, marginBottom: 32 },
   subHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 24, marginBottom: 16 },

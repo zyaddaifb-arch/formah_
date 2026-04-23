@@ -54,15 +54,17 @@ const SwipeActionIcon = ({
   }, [isOpen]);
 
   const animatedStyle = useAnimatedStyle(() => {
-    // Initial entry scaling
     const scale = interpolate(staggeredProgress.value, [0, 1], [0.8, 1], 'clamp');
     const opacity = interpolate(staggeredProgress.value, [0, 1], [0, 1], 'clamp');
     
     // Scale up extra when passing the full swipe threshold
-    const fullSwipeScale = interpolate(translateX.value, [MAX_SWIPE, FULL_SWIPE_THRESHOLD], [1, 1.3], 'clamp');
+    const fullSwipeScale = interpolate(translateX.value, [MAX_SWIPE, FULL_SWIPE_THRESHOLD], [1, 1.2], 'clamp');
     
-    // Icon slides in from the right when the row is swiped
-    const tx = interpolate(translateX.value, [0, MAX_SWIPE], [20, -40], 'clamp');
+    // Icon slides in from the right edge. 
+    // We want it to stay centered in the revealed space or pinned to the right.
+    // As translateX goes from 0 to MAX_SWIPE (-80), tx moves from 40 (off-screen right) to 0 (at its padding position).
+    // As it goes further to FULL_SWIPE_THRESHOLD (-200), we keep it visible.
+    const tx = interpolate(translateX.value, [0, MAX_SWIPE], [60, 0], 'clamp');
 
     return {
       opacity,
@@ -109,7 +111,7 @@ export const WorkoutSetSwipeRow = ({
   }, [isOpen]);
 
   const panGesture = Gesture.Pan()
-    .activeOffsetX([-15, 15]) // Be precise
+    .activeOffsetX([-15, 15])
     .onUpdate((event) => {
       const newX = isOpen ? MAX_SWIPE + event.translationX : event.translationX;
       
@@ -126,19 +128,15 @@ export const WorkoutSetSwipeRow = ({
     })
     .onEnd((event) => {
       if (translateX.value < FULL_SWIPE_THRESHOLD || event.velocityX < -1500) {
-        // Automatically delete when swiped far enough
         runOnJS(Haptics.notificationAsync)(Haptics.NotificationFeedbackType.Success);
         runOnJS(onDelete)();
         translateX.value = withSpring(-width, { ...SPRING_CONFIG, velocity: event.velocityX });
       } else if (!isOpen && translateX.value < SWIPE_THRESHOLD) {
-        // Just revealing the button
         runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Light);
         runOnJS(onOpen)();
       } else if (isOpen && event.translationX > 30) {
-        // Close manually
         runOnJS(onClose)();
       } else {
-        // Return to relevant position
         if (isOpen) {
           translateX.value = withSpring(MAX_SWIPE, SPRING_CONFIG);
         } else {
@@ -153,11 +151,11 @@ export const WorkoutSetSwipeRow = ({
   }));
 
   const backgroundStyle = useAnimatedStyle(() => {
-    // The red background remains hidden (translated fully right) until we pass MAX_SWIPE.
-    // Once translateX < MAX_SWIPE, it begins to slide in from the right to fill the area.
-    const tx = interpolate(
+    // Reveal the red background as we swipe left.
+    // It starts at the right edge and moves left to cover the gap.
+    const bgTranslateX = interpolate(
       translateX.value,
-      [MAX_SWIPE, FULL_SWIPE_THRESHOLD],
+      [0, -width],
       [width, 0],
       Extrapolate.CLAMP
     );
@@ -165,7 +163,7 @@ export const WorkoutSetSwipeRow = ({
     return {
       backgroundColor: '#FF453A',
       ...StyleSheet.absoluteFillObject,
-      transform: [{ translateX: tx }],
+      transform: [{ translateX: bgTranslateX }],
       zIndex: 0,
     };
   });

@@ -22,19 +22,35 @@ export const GridBackground = () => (
   </View>
 );
 
-export const BlurGlow = ({ position = 'topRight', color = Colors.primary }: { position?: 'topRight' | 'bottomLeft' | 'center', color?: string }) => {
+export const BlurGlow = ({ 
+  position = 'topRight', 
+  color = Colors.primary,
+  size = 400,
+  blur = 0 // Keeping it optional for now
+}: { 
+  position?: 'topRight' | 'bottomLeft' | 'center', 
+  color?: string,
+  size?: number,
+  blur?: number
+}) => {
   const positioning = position === 'topRight' 
-    ? { top: -100, right: -100 } 
+    ? { top: -size/4, right: -size/4 } 
     : position === 'bottomLeft' 
-    ? { bottom: -100, left: -100 }
-    : { top: height / 2 - 200, left: width / 2 - 200 };
+    ? { bottom: -size/4, left: -size/4 }
+    : { top: height / 2 - size / 2, left: width / 2 - size / 2 };
 
   return (
     <View 
       style={[
         styles.glow, 
         positioning, 
-        { backgroundColor: color, opacity: 0.15 }
+        { 
+          backgroundColor: color, 
+          opacity: 0.15,
+          width: size,
+          height: size,
+          borderRadius: size / 2
+        }
       ]} 
       pointerEvents="none"
     />

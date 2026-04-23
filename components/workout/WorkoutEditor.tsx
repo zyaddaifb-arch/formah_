@@ -1,19 +1,18 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import DraggableFlatList, { ScaleDecorator, RenderItemParams } from 'react-native-draggable-flatlist';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View, StyleSheet, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { soundService } from '@/services/SoundService';
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { Exercise, FocusMetricType } from '@/store/types';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 
 // Feature Components
 import { ExerciseCard } from './ExerciseCard';
-import { 
+import {
   WarmUpConfigModal,
   PreferencesModal,
   LineTimerModal,
@@ -46,7 +45,6 @@ interface WorkoutEditorProps {
   title: string;
   exercises: Exercise[];
   actions: WorkoutActions;
-  // Active Mode specific
   renderHeader?: () => React.ReactNode;
   renderFooter?: () => React.ReactNode;
   previousExerciseCache?: Record<string, any>;
@@ -209,7 +207,7 @@ export function WorkoutEditor({
                       style={styles.titleInput}
                       value={title}
                       onChangeText={actions.updateTitle}
-                      placeholder="Template Name (e.g. Upper Body)"
+                      placeholder="Template Title"
                       placeholderTextColor="rgba(225,228,249,0.3)"
                   />
                 ) : (
@@ -358,6 +356,7 @@ export function WorkoutEditor({
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   scrollContent: { paddingBottom: 100 },

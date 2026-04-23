@@ -15,6 +15,9 @@ import { ThemedText } from '@/components/ThemedText';
 import { BlurView } from 'expo-blur';
 import { WorkoutTemplate, WorkoutSession } from '@/store/types';
 import { ExerciseDetailsModal } from '@/components/ExerciseDetailsModal';
+import { Image } from 'expo-image';
+import { EXERCISE_LIBRARY } from '@/store/exerciseLibrary';
+import exerciseMapping from '@/constants/exerciseMapping.json';
 
 const { width, height } = Dimensions.get('window');
 
@@ -25,21 +28,6 @@ interface TemplateSummaryModalProps {
   history: WorkoutSession[];
   onStartWorkout: () => void;
   onEditTemplate: () => void;
-}
-
-// Manual relative time calculation to avoid date-fns resolution issues
-function getTimeAgo(timestamp: number) {
-  const seconds = Math.floor((Date.now() - timestamp) / 1000);
-  if (seconds < 60) return 'Just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
-  const months = Math.floor(days / 30);
-  if (months < 12) return `${months}mo ago`;
-  return `${Math.floor(months / 12)}y ago`;
 }
 
 export const TemplateSummaryModal: React.FC<TemplateSummaryModalProps> = ({
@@ -54,13 +42,36 @@ export const TemplateSummaryModal: React.FC<TemplateSummaryModalProps> = ({
 
   if (!template) return null;
 
+  const getTimeAgo = (timestamp: number) => {
+    const seconds = Math.floor((Date.now() - timestamp) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    if (days < 30) return `${days}d ago`;
+    return `${Math.floor(days / 30)}mo ago`;
+  };
+
   const lastPerformed = history
     .filter(session => session.templateId === template.id)
     .sort((a, b) => b.endTime - a.endTime)[0];
 
   const lastPerformedText = lastPerformed 
-    ? `Last Performed: ${getTimeAgo(lastPerformed.endTime)}`
-    : 'Never performed';
+    ? `Last performed ${getTimeAgo(lastPerformed.endTime)}`
+    : "Never performed";
+
+  const getCategoryLabel = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('chest') || lower.includes('bench')) return "Chest";
+    if (lower.includes('back') || lower.includes('row') || lower.includes('pull') || lower.includes('lat')) return "Back";
+    if (lower.includes('leg') || lower.includes('squat')) return "Legs";
+    if (lower.includes('shoulder') || lower.includes('press')) return "Shoulders";
+    if (lower.includes('arm') || lower.includes('bicep') || lower.includes('tricep') || lower.includes('curl')) return "Arms";
+    if (lower.includes('abs') || lower.includes('core') || lower.includes('stomach')) return "Core";
+    return "Other";
+  };
 
   return (
     <Modal
@@ -75,8 +86,7 @@ export const TemplateSummaryModal: React.FC<TemplateSummaryModalProps> = ({
         </TouchableWithoutFeedback>
         
         <View style={styles.container}>
-          <BlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
-          <View style={[styles.content, { backgroundColor: 'rgba(24, 31, 50, 0.9)' }]}>
+          <View style={styles.content}>
             
             {/* Header */}
             <View style={styles.header}>
@@ -109,10 +119,23 @@ export const TemplateSummaryModal: React.FC<TemplateSummaryModalProps> = ({
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
             >
-              {template.exercises.map((ex, idx) => (
+              {template.exercises.map((ex, idx) => {
+                const exerciseObj = EXERCISE_LIBRARY.find(e => e.name === ex.name);
+                const mediaData = exerciseObj ? (exerciseMapping as any)[exerciseObj.id] : null;
+
+                return (
                 <View key={ex.id || idx} style={styles.exerciseItem}>
                   <View style={styles.exerciseIconContainer}>
-                    <MaterialCommunityIcons name="dumbbell" size={24} color={template.color || Colors.primary} />
+                    {mediaData?.thumbnail ? (
+                      <Image 
+                        source={{ uri: mediaData.thumbnail }}
+                        style={{ width: '100%', height: '100%', borderRadius: 12 }}
+                        contentFit="cover"
+                        transition={300}
+                      />
+                    ) : (
+                      <MaterialCommunityIcons name="dumbbell" size={24} color={template.color || Colors.primary} />
+                    )}
                   </View>
                   
                   <View style={styles.exerciseInfo}>
@@ -120,10 +143,7 @@ export const TemplateSummaryModal: React.FC<TemplateSummaryModalProps> = ({
                       {ex.sets.length} × {ex.name}
                     </ThemedText>
                     <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>
-                      {ex.name.toLowerCase().includes('chest') || ex.name.toLowerCase().includes('bench') ? 'Chest' : 
-                       ex.name.toLowerCase().includes('back') || ex.name.toLowerCase().includes('row') || ex.name.toLowerCase().includes('pull') ? 'Back' :
-                       ex.name.toLowerCase().includes('leg') || ex.name.toLowerCase().includes('squat') ? 'Legs' :
-                       ex.name.toLowerCase().includes('shoulder') || ex.name.toLowerCase().includes('press') ? 'Shoulders' : 'Other'}
+                      {getCategoryLabel(ex.name)}
                     </ThemedText>
                   </View>
 
@@ -134,7 +154,7 @@ export const TemplateSummaryModal: React.FC<TemplateSummaryModalProps> = ({
                     <MaterialCommunityIcons name="help-circle-outline" size={20} color={Colors.primary} />
                   </TouchableOpacity>
                 </View>
-              ))}
+              )})}
             </ScrollView>
 
             {/* Footer */}
@@ -164,7 +184,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.7)',
+    backgroundColor: 'rgba(0,0,0,0.8)',
   },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
@@ -173,6 +193,7 @@ const styles = StyleSheet.create({
     width: width * 0.9,
     height: height * 0.7,
     borderRadius: 24,
+    backgroundColor: Colors.surfaceContainerHigh,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(225, 228, 249, 0.15)',

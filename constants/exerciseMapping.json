@@ -2,56 +2,56 @@
   "chest_001": {
     "externalId": "exr_41n2hxnFMotsXTj3",
     "externalName": "Bench Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_001.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/barbell_bench_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_002": {
     "externalId": "exr_41n2hxnFMotsXTj3",
     "externalName": "Bench Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_002.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/incline_barbell_bench_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_003": {
     "externalId": "exr_41n2hxnFMotsXTj3",
     "externalName": "Bench Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_003.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/decline_barbell_bench_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_004": {
     "externalId": "exr_41n2hxnFMotsXTj3",
     "externalName": "Bench Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_004.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/dumbbell_bench_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_005": {
     "externalId": "exr_41n2haNJ3NA8yCE2",
     "externalName": "Dumbbell Incline One Arm Hammer Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_005.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/incline_dumbbell_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_006": {
     "externalId": "exr_41n2haNJ3NA8yCE2",
     "externalName": "Dumbbell Incline One Arm Hammer Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_006.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/decline_dumbbell_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_007": {
     "externalId": "exr_41n2hyNf5GebszTf",
     "externalName": "Dumbbell Rear Delt Fly ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_007.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/dumbbell_fly.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_008": {
     "externalId": "exr_41n2haNJ3NA8yCE2",
     "externalName": "Dumbbell Incline One Arm Hammer Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_008.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/incline_dumbbell_fly.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -63,21 +63,21 @@
   "chest_014": {
     "externalId": "exr_41n2hGUso7JFmuYR",
     "externalName": "Decline Push-Up",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_014.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/push_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_015": {
     "externalId": "exr_41n2hNXJadYcfjnd",
     "externalName": "Push-up",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_015.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/wide_push_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "chest_016": {
     "externalId": "exr_41n2hnbt5GwwY7gr",
     "externalName": "Diamond Push up ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chest_016.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/diamond_push_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -86,14 +86,14 @@
   "back_001": {
     "externalId": "exr_41n2hcw2FN534HcA",
     "externalName": "Dumbbell Stiff Leg Deadlift",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_001.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/deadlift.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "back_002": {
     "externalId": "exr_41n2hn8rpbYihzEW",
     "externalName": "Romanian Deadlift",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_002.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/romanian_deadlift.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -103,21 +103,21 @@
   "back_006": {
     "externalId": "exr_41n2hftBVLiXgtRQ",
     "externalName": "Wide Grip Pull-Up",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_006.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/pull_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "back_007": {
     "externalId": "exr_41n2hd6SThQhAdnZ",
     "externalName": "Chin-ups",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_007.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/chin_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "back_008": {
     "externalId": "exr_41n2hsBtDXapcADg",
     "externalName": "Pull-up",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_008.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/neutral_grip_pull_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -126,7 +126,7 @@
   "back_011": {
     "externalId": "exr_41n2hcFJpBvAkXCP",
     "externalName": "Seated Row with Towel",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_011.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/seated_cable_row.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -134,14 +134,14 @@
   "back_013": {
     "externalId": "exr_41n2hY9EdwkdGz9a",
     "externalName": "Dumbbell One Arm Bent-over Row",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_013.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/dumbbell_row.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "back_014": {
     "externalId": "exr_41n2haNJ3NA8yCE2",
     "externalName": "Dumbbell Incline One Arm Hammer Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/back_014.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/incline_dumbbell_row.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -154,42 +154,42 @@
   "sho_002": {
     "externalId": "exr_41n2haNJ3NA8yCE2",
     "externalName": "Dumbbell Incline One Arm Hammer Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_002.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/seated_dumbbell_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "sho_003": {
     "externalId": "exr_41n2hMRXm49mM62z",
     "externalName": "Arnold Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_003.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arnold_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "sho_004": {
     "externalId": "exr_41n2hjuGpcex14w7",
     "externalName": "Lateral Raise",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_004.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/dumbbell_lateral_raise.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "sho_005": {
     "externalId": "exr_41n2hjuGpcex14w7",
     "externalName": "Lateral Raise",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_005.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/cable_lateral_raise.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "sho_006": {
     "externalId": "exr_41n2howQHvcrcrW6",
     "externalName": "Front Raise",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_006.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/dumbbell_front_raise.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "sho_007": {
     "externalId": "exr_41n2howQHvcrcrW6",
     "externalName": "Front Raise",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_007.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/barbell_front_raise.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -197,14 +197,14 @@
   "sho_009": {
     "externalId": "exr_41n2hyNf5GebszTf",
     "externalName": "Dumbbell Rear Delt Fly ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_009.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/dumbbell_rear_delt_fly.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "sho_010": {
     "externalId": "exr_41n2hs6camM22yBG",
     "externalName": "Seated Shoulder Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_010.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/machine_shoulder_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -213,7 +213,7 @@
   "sho_013": {
     "externalId": "exr_41n2hNXJadYcfjnd",
     "externalName": "Push-up",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sho_013.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/handstand_push_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -225,21 +225,21 @@
   "arm_004": {
     "externalId": "exr_41n2hgCHNgtVLHna",
     "externalName": "Cross Body Hammer Curl",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arm_004.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/hammer_curl.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "arm_005": {
     "externalId": "exr_41n2haNJ3NA8yCE2",
     "externalName": "Dumbbell Incline One Arm Hammer Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arm_005.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/incline_dumbbell_curl.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "arm_006": {
     "externalId": "exr_41n2hxqpSU5p6DZv",
     "externalName": "Biceps Leg Concentration Curl",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arm_006.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/concentration_curl.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -253,14 +253,14 @@
   "arm_014": {
     "externalId": "exr_41n2hxnFMotsXTj3",
     "externalName": "Bench Press",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arm_014.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/close_grip_bench_press.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "arm_015": {
     "externalId": "exr_41n2hadQgEEX8wDN",
     "externalName": "Triceps Dip",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arm_015.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/triceps_dip.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -268,49 +268,49 @@
   "arm_017": {
     "externalId": "exr_41n2hGy6zE7fN6v2",
     "externalName": "One arm Wrist Curl",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arm_017.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/wrist_curl.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "arm_018": {
     "externalId": "exr_41n2hGy6zE7fN6v2",
     "externalName": "One arm Wrist Curl",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/arm_018.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/reverse_wrist_curl.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_001": {
     "externalId": "exr_41n2hmGR8WuVfe1U",
     "externalName": "Squat",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_001.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/squat.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_002": {
     "externalId": "exr_41n2hmGR8WuVfe1U",
     "externalName": "Squat",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_002.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/front_squat.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_003": {
     "externalId": "exr_41n2hmGR8WuVfe1U",
     "externalName": "Squat",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_003.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/hack_squat.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_004": {
     "externalId": "exr_41n2hmGR8WuVfe1U",
     "externalName": "Squat",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_004.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/bulgarian_split_squat.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_005": {
     "externalId": "exr_41n2hmGR8WuVfe1U",
     "externalName": "Squat",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_005.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/goblet_squat.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -319,42 +319,42 @@
   "leg_008": {
     "externalId": "exr_41n2hPvwqp7Pwvks",
     "externalName": "Seated Single Leg Hamstring Stretch",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_008.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/seated_leg_curl.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_009": {
     "externalId": "exr_41n2hc2VrB8ofxrW",
     "externalName": "Lying Double Legs Biceps Curl with Towel",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_009.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/lying_leg_curl.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_010": {
     "externalId": "exr_41n2hn8rpbYihzEW",
     "externalName": "Romanian Deadlift",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_010.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/romanian_deadlift__dumbbell_.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_011": {
     "externalId": "exr_41n2hcw2FN534HcA",
     "externalName": "Dumbbell Stiff Leg Deadlift",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_011.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/stiff_leg_deadlift.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_012": {
     "externalId": "exr_41n2hQHmRSoUkk9F",
     "externalName": "Walking Lunge",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_012.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/walking_lunges.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_013": {
     "externalId": "exr_41n2hGNrmUnF58Yy",
     "externalName": "Reverse Lunge ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_013.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/reverse_lunge.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -363,14 +363,14 @@
   "leg_016": {
     "externalId": "exr_41n2hWbP5uF6PQpU",
     "externalName": "Donkey Calf Raise",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_016.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/donkey_calf_raise.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_017": {
     "externalId": "exr_41n2hxxePSdr5oN1",
     "externalName": "Hip Thrusts",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_017.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/hip_thrust.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -378,14 +378,14 @@
   "leg_019": {
     "externalId": "exr_41n2hmGR8WuVfe1U",
     "externalName": "Squat",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_019.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sumo_squat.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "leg_020": {
     "externalId": "exr_41n2hXvPyEyMBgNR",
     "externalName": "Step-up on Chair",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_020.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/step_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -393,7 +393,7 @@
   "leg_022": {
     "externalId": "exr_41n2hmGR8WuVfe1U",
     "externalName": "Squat",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/leg_022.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/sissy_squat.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -403,7 +403,7 @@
   "core_004": {
     "externalId": "exr_41n2hskeb9dXgBoC",
     "externalName": "Crunch Floor",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/core_004.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/crunch.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -412,14 +412,14 @@
   "core_007": {
     "externalId": "exr_41n2hbLX4XH8xgN7",
     "externalName": "Dumbbell Single Leg Calf Raise",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/core_007.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/hanging_leg_raise.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "core_008": {
     "externalId": "exr_41n2hMZCmZBvQApL",
     "externalName": "Hanging Straight Leg Raise ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/core_008.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/hanging_knee_raise.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -427,14 +427,14 @@
   "core_010": {
     "externalId": "exr_41n2hvjrFJ2KjzGm",
     "externalName": "Sit ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/core_010.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/decline_sit_up.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "core_011": {
     "externalId": "exr_41n2hWVVEwU54UtF",
     "externalName": "Russian Twist",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/core_011.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/russian_twist.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -460,7 +460,7 @@
   "fb_004": {
     "externalId": "exr_41n2hqYdxG87hXz1",
     "externalName": "Burpee",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/fb_004.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/burpee.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -478,7 +478,7 @@
   "card_006": {
     "externalId": "exr_41n2hLZZAH2F2UkS",
     "externalName": "Walk Elliptical Cross Trainer ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/card_006.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/elliptical_trainer.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -486,7 +486,7 @@
   "card_008": {
     "externalId": "exr_41n2hN468sP27Sac",
     "externalName": "Jump Rope",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/card_008.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/jump_rope.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -495,7 +495,7 @@
   "card_011": {
     "externalId": "exr_41n2hmhb4jD7H8Qk",
     "externalName": "Assault Bike Run",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/card_011.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/assault_bike.jpg",
     "videoUrl": null,
     "instructions": null
   },
@@ -503,14 +503,14 @@
   "card_013": {
     "externalId": "exr_41n2hupxPcdnktBC",
     "externalName": "Jumping Jack",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/card_013.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/jumping_jack.jpg",
     "videoUrl": null,
     "instructions": null
   },
   "card_014": {
     "externalId": "exr_41n2ha5iPFpN3hEJ",
     "externalName": "Bridge - Mountain Climber ",
-    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/card_014.jpg",
+    "thumbnail": "https://cqckuldmpmjpjqofmejt.supabase.co/storage/v1/object/public/exercises/thumbnails/mountain_climber.jpg",
     "videoUrl": null,
     "instructions": null
   },

@@ -27,6 +27,8 @@ import exerciseMapping from '@/constants/exerciseMapping.json';
 export type { LibraryExercise } from '@/store/types';
 
 
+import { useWorkoutStore } from '@/store/workoutStore';
+
 export interface ExerciseSelectionModalProps {
   visible: boolean;
   onClose: () => void;
@@ -36,9 +38,13 @@ export interface ExerciseSelectionModalProps {
 
 export function ExerciseSelectionModal({ visible, onClose, onAddExercises, existingExerciseNames = [] }: ExerciseSelectionModalProps) {
   const insets = useSafeAreaInsets();
+  const { user, addCustomExercise } = useWorkoutStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [library, setLibrary] = useState<LibraryExercise[]>(EXERCISE_LIBRARY);
+  
+  const library = useMemo(() => {
+    return [...EXERCISE_LIBRARY, ...(user.customExercises || [])];
+  }, [user.customExercises]);
 
   const [filterBodyPart, setFilterBodyPart] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
@@ -106,7 +112,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
       frequency: 0,
       lastPerformed: ''
     };
-    setLibrary(prev => [...prev, custom]);
+    addCustomExercise(custom);
     setSelectedIds(prev => new Set(prev).add(custom.id));
     setCreateModalVisible(false);
     setCustomName('');
@@ -185,7 +191,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
             <MaterialCommunityIcons name="magnify" size={20} color={Colors.onSurfaceVariant} style={styles.searchIcon} />
             <TextInput 
               style={styles.searchInput}
-              placeholder="Search"
+              placeholder="Search exercises..."
               placeholderTextColor={Colors.onSurfaceVariant}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -195,12 +201,12 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
           <View style={styles.filtersRow}>
             <TouchableOpacity style={[styles.filterPill, filterBodyPart !== 'All' && styles.filterPillActive]} onPress={() => setFilterModalConfig({ visible: true, type: 'bodyPart' })}>
               <ThemedText type="label" size={14} color={filterBodyPart !== 'All' ? Colors.primary : Colors.onSurface}>
-                {filterBodyPart === 'All' ? 'Body Part' : filterBodyPart}
+                {filterBodyPart}
               </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity style={[styles.filterPill, filterCategory !== 'All' && styles.filterPillActive]} onPress={() => setFilterModalConfig({ visible: true, type: 'category' })}>
               <ThemedText type="label" size={14} color={filterCategory !== 'All' ? Colors.primary : Colors.onSurface}>
-                {filterCategory === 'All' ? 'Category' : filterCategory}
+                {filterCategory}
               </ThemedText>
             </TouchableOpacity>
             <TouchableOpacity style={styles.filterIconBtn} onPress={() => setFilterModalConfig({ visible: true, type: 'sort'})}>
@@ -214,7 +220,9 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
             showsVerticalScrollIndicator={false}
             renderSectionHeader={({ section: { title } }) => (
               <View style={styles.sectionHeader}>
-                <ThemedText type="headline" size={16} color={Colors.primary} style={styles.sectionTitle}>{title}</ThemedText>
+                <ThemedText type="headline" size={16} color={Colors.primary} style={styles.sectionTitle}>
+                  {title}
+                </ThemedText>
               </View>
             )}
             renderItem={({ item }) => {
@@ -249,7 +257,9 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                     
                     <View style={styles.itemInfo}>
                       <ThemedText type="headline" size={16} color={isAlreadyAdded ? Colors.onSurfaceVariant : Colors.onSurface}>{item.name}</ThemedText>
-                      <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{item.bodyPart} • {item.category}</ThemedText>
+                      <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>
+                        {item.bodyPart} • {item.category}
+                      </ThemedText>
                     </View>
                   </View>
                   
@@ -285,8 +295,8 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                   Can&apos;t find what you&apos;re looking for? Add it to your custom library.
                 </ThemedText>
                 <TouchableOpacity 
-                  style={styles.emptyStateBtn} 
-                  onPress={handleNewExercise}
+                   style={styles.emptyStateBtn} 
+                   onPress={handleNewExercise}
                 >
                   <ThemedText type="headline" size={14} color={Colors.onPrimary}>Create Custom Exercise</ThemedText>
                 </TouchableOpacity>
@@ -301,7 +311,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
             <View style={styles.pickerContent}>
               <View style={styles.pickerHeader}>
                 <ThemedText type="headline" size={20}>
-                  Select {filterModalConfig.type === 'bodyPart' ? 'Body Part' : filterModalConfig.type === 'category' ? 'Category' : 'Sort By'}
+                  {filterModalConfig.type === 'bodyPart' ? 'Select Body Part' : filterModalConfig.type === 'category' ? 'Select Category' : 'Sort By'} 
                 </ThemedText>
                 <TouchableOpacity onPress={() => setFilterModalConfig({ ...filterModalConfig, visible: false })}>
                   <MaterialCommunityIcons name="close" size={24} color={Colors.onSurface} />
@@ -320,7 +330,9 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                 >
                   <ThemedText type="body" size={16} color={
                     (filterModalConfig.type === 'bodyPart' ? filterBodyPart : filterModalConfig.type === 'category' ? filterCategory : sortBy) === opt ? Colors.primary : Colors.onSurface
-                  }>{opt}</ThemedText>
+                  }>
+                    {opt}
+                  </ThemedText>
                 </TouchableOpacity>
               ))}
             </View>
@@ -344,7 +356,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                 <ThemedText type="headline" size={16} style={{ marginBottom: 12 }}>Name</ThemedText>
                 <TextInput
                   style={styles.createInput}
-                  placeholder="Add Name"
+                  placeholder="Exercise Name"
                   placeholderTextColor={Colors.onSurfaceVariant}
                   value={customName}
                   onChangeText={setCustomName}
@@ -358,7 +370,9 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                       style={[styles.createChip, customBodyPart === b && styles.createChipActive]} 
                       onPress={() => setCustomBodyPart(b)}
                     >
-                      <ThemedText type="headline" size={14} color={customBodyPart === b ? Colors.onSurface : Colors.onSurfaceVariant}>{b}</ThemedText>
+                      <ThemedText type="headline" size={14} color={customBodyPart === b ? Colors.onSurface : Colors.onSurfaceVariant}>
+                        {b}
+                      </ThemedText>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -366,7 +380,7 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                 <ThemedText type="headline" size={16} style={{ marginBottom: 12, marginTop: 24 }}>Category</ThemedText>
                 <TouchableOpacity style={styles.createDropdown} onPress={() => setCustomCategoryPickerVisible(true)}>
                   <ThemedText type="headline" size={16} color={customCategory ? Colors.onSurface : Colors.onSurfaceVariant}>
-                    {customCategory || 'Select an Option'}
+                    {customCategory || "Select Category"}
                   </ThemedText>
                   <MaterialCommunityIcons name="unfold-more-horizontal" size={24} color={Colors.onSurfaceVariant} />
                 </TouchableOpacity>
@@ -395,7 +409,9 @@ export function ExerciseSelectionModal({ visible, onClose, onAddExercises, exist
                     setCustomCategoryPickerVisible(false);
                   }}
                 >
-                  <ThemedText type="body" size={16} color={customCategory === opt ? Colors.primary : Colors.onSurface}>{opt}</ThemedText>
+                  <ThemedText type="body" size={16} color={customCategory === opt ? Colors.primary : Colors.onSurface}>
+                    {opt}
+                  </ThemedText>
                 </TouchableOpacity>
               ))}
             </View>

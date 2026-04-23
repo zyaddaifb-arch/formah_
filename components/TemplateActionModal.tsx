@@ -100,7 +100,6 @@ export const TemplateActionModal: React.FC<TemplateActionModalProps> = ({
           <View style={styles.overlay}>
             <TouchableWithoutFeedback onPress={() => {}}>
               <View style={styles.container}>
-                <BlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
                 
                 {isRenaming ? (
                   <View style={styles.content}>
@@ -194,6 +193,7 @@ const styles = StyleSheet.create({
   container: {
     width: width * 0.85,
     borderRadius: 24,
+    backgroundColor: Colors.surfaceContainerHigh,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(225, 228, 249, 0.1)',

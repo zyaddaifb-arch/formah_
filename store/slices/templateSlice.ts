@@ -34,6 +34,7 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
     set((state) => ({
       templates: [...state.templates, template],
     }));
+    SupabaseSyncService.queueMutation('workout_templates', 'INSERT', template);
   },
 
   startTemplateCreation: (templateId, folderId) => {
@@ -50,7 +51,7 @@ export const createTemplateSlice: StateCreator<WorkoutStore, [], [], TemplateSli
       draftTemplate: {
         id: generateUUID(),
         title: 'New Template',
-        type: 'Custom',
+        type: 'New',
         timeEstimate: '45m',
         exercises: [],
         color: '#81ECFF',

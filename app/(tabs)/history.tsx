@@ -8,6 +8,8 @@ import {
   LayoutAnimation,
   Modal,
   Alert,
+  TouchableWithoutFeedback,
+  Image
 } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
@@ -17,7 +19,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { useWorkoutStore } from '../../store/workoutStore';
 import { WorkoutSession } from '../../store/types';
-
 import { WorkoutSessionDetailModal } from '../../components/WorkoutSessionDetailModal';
 
 const { width } = Dimensions.get('window');
@@ -41,6 +42,7 @@ export default function HistoryScreen() {
   const deleteSession = useWorkoutStore(state => state.deleteSession);
   const addTemplate = useWorkoutStore(state => state.addTemplate);
   const startWorkout = useWorkoutStore(state => state.startWorkout);
+  const user = useWorkoutStore(state => state.user);
   const router = useRouter();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -114,7 +116,7 @@ export default function HistoryScreen() {
     addTemplate({
       id: 'template_' + Date.now(),
       title: session.title,
-      type: 'Custom',
+      type: 'New',
       timeEstimate: `${Math.round((session.endTime - session.startTime) / 60000)}m`,
       exercises: session.exercises,
       color: '#81ECFF',
@@ -139,10 +141,14 @@ export default function HistoryScreen() {
         contentContainerStyle={styles.scrollContent} 
         showsVerticalScrollIndicator={false}
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 24 }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, marginTop: 40 }}>
           <ThemedText type="headline" size={40} color={Colors.onSurface} style={{ fontWeight: '900', letterSpacing: -1 }}>HISTORY</ThemedText>
-          <TouchableOpacity onPress={() => router.push('/profile')} style={{ padding: 4 }}>
-            <MaterialCommunityIcons name="account-circle-outline" size={28} color={Colors.primary} />
+          <TouchableOpacity onPress={() => router.push('/profile')} style={styles.profileBtn}>
+            {user.avatarUri ? (
+              <Image source={{ uri: user.avatarUri }} style={styles.avatarImage} />
+            ) : (
+              <MaterialCommunityIcons name="account-circle-outline" size={36} color={Colors.primary} />
+            )}
           </TouchableOpacity>
         </View>
 
@@ -156,7 +162,7 @@ export default function HistoryScreen() {
             </TouchableOpacity>
 
             <ThemedText type="headline" size={24} style={{ flex: 1, textAlign: 'center' }}>
-              {currentMonth.toLocaleDateString('default', { month: 'long', year: 'numeric' })}
+              {currentMonth.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
             </ThemedText>
 
             <TouchableOpacity 
@@ -196,14 +202,14 @@ export default function HistoryScreen() {
                 >
                   <View style={[
                     styles.dayNumber, 
-                    hasWorkout && styles.workoutDay,
                     isToday && styles.todayContainer,
+                    hasWorkout && styles.workoutDay,
                     isSelected && styles.selectedContainer
                   ]}>
                     <ThemedText 
                       type="headline" 
                       size={14} 
-                      color={isSelected ? Colors.onPrimary : isToday ? Colors.background : hasWorkout ? Colors.primary : Colors.onSurface}
+                      color={isSelected ? Colors.onTertiary : hasWorkout ? Colors.onPrimary : isToday ? Colors.primary : Colors.onSurface}
                     >
                       {dayNum < 10 ? `0${dayNum}` : dayNum}
                     </ThemedText>
@@ -219,7 +225,7 @@ export default function HistoryScreen() {
           <View style={styles.activityHeader}>
             <View>
                 <ThemedText type="headline" size={24}>
-                    {selectedDate ? `Workouts on ${selectedDate.toLocaleDateString('default', { day: 'numeric', month: 'short' })}` : 'Past Workouts'}
+                    {selectedDate ? `Workouts on ${selectedDate.toLocaleDateString()}` : 'Past Workouts'}
                 </ThemedText>
                 {selectedDate && (
                     <TouchableOpacity onPress={() => setSelectedDate(null)}>
@@ -251,7 +257,7 @@ export default function HistoryScreen() {
                       <View style={styles.workoutInfoLeft}>
                         <ThemedText type="headline" size={18}>{item.title}</ThemedText>
                         <ThemedText type="body" size={13} color={Colors.onSurfaceVariant}>
-                          {sessionDate.toLocaleDateString()} • {minutes}m • {totalSets} sets
+                          {sessionDate.toLocaleDateString()} • {minutes}m • {totalSets} <ThemedText type="body" size={13} color={Colors.onSurfaceVariant}>sets</ThemedText>
                         </ThemedText>
                       </View>
                     </View>
@@ -322,29 +328,38 @@ export default function HistoryScreen() {
       {/* 3-dots Action Menu */}
       <Modal visible={menuSession !== null} transparent animationType="fade" onRequestClose={() => setMenuSession(null)}>
         <TouchableOpacity style={styles.menuOverlay} activeOpacity={1} onPress={() => setMenuSession(null)}>
-          <View style={styles.menuSheet}>
-            <View style={styles.menuHandle} />
-            <ThemedText type="headline" size={16} color={Colors.onSurface} style={styles.menuTitle}>
-              {menuSession?.title}
-            </ThemedText>
+          <TouchableWithoutFeedback>
+            <View style={styles.menuCenterCard}>
+              <View style={styles.menuCenterHeader}>
+                <ThemedText type="headline" size={20} color={Colors.onSurface} numberOfLines={1} style={{ flex: 1, marginRight: 16 }}>
+                  {menuSession?.title}
+                </ThemedText>
+                <TouchableOpacity onPress={() => setMenuSession(null)} style={{ padding: 4, marginRight: -4 }}>
+                  <MaterialCommunityIcons name="close" size={24} color={Colors.onSurface} />
+                </TouchableOpacity>
+              </View>
 
-            {[
-              { icon: 'delete-outline', label: 'Delete', color: Colors.error, onPress: () => menuSession && handleDeleteSession(menuSession) },
-              { icon: 'content-save-outline', label: 'Save as Template', color: Colors.onSurface, onPress: () => menuSession && handleSaveAsTemplate(menuSession) },
-              { icon: 'pencil-outline', label: 'Edit Workout', color: Colors.onSurface, onPress: () => { 
-                if (menuSession) {
-                  router.push({ pathname: '/edit-session' as any, params: { sessionId: menuSession.id } });
-                  setMenuSession(null);
-                }
-              } },
-              { icon: 'play-circle-outline', label: 'Perform Again', color: Colors.primary, onPress: () => menuSession && handlePerformAgain(menuSession) },
-            ].map(action => (
-              <TouchableOpacity key={action.label} style={styles.menuItem} onPress={action.onPress}>
-                <MaterialCommunityIcons name={action.icon as any} size={22} color={action.color} />
-                <ThemedText type="headline" size={16} color={action.color}>{action.label}</ThemedText>
-              </TouchableOpacity>
-            ))}
-          </View>
+              <View style={{ gap: 12 }}>
+              {[
+                { icon: 'play-circle-outline', label: 'Perform Again', color: Colors.primary, onPress: () => menuSession && handlePerformAgain(menuSession) },
+                { icon: 'pencil-outline', label: 'Edit Workout', color: Colors.onSurface, onPress: () => { 
+                  if (menuSession) {
+                    router.push({ pathname: '/edit-session' as any, params: { sessionId: menuSession.id } });
+                    setMenuSession(null);
+                  }
+                } },
+                { icon: 'content-save-outline', label: 'Save as Template', color: Colors.onSurface, onPress: () => menuSession && handleSaveAsTemplate(menuSession) },
+                { icon: 'trash-can-outline', label: 'Delete', color: Colors.error, onPress: () => menuSession && handleDeleteSession(menuSession) },
+              ].map(action => (
+                <TouchableOpacity key={action.label} style={styles.menuCenterItem} onPress={action.onPress}>
+                  <MaterialCommunityIcons name={action.icon as any} size={24} color={action.color} />
+                  <ThemedText type="body" size={16} color={action.color} style={{ flex: 1 }}>{action.label}</ThemedText>
+                  <MaterialCommunityIcons name="chevron-right" size={20} color="rgba(225,228,249,0.2)" />
+                </TouchableOpacity>
+              ))}
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
         </TouchableOpacity>
       </Modal>
     </View>
@@ -361,6 +376,26 @@ const LegendItem = ({ color, label }: { color: string, label: string }) => (
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.background },
   scrollContent: { paddingHorizontal: 24, paddingVertical: 40, paddingBottom: 120 },
+  profileBtn: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: Colors.surfaceContainerHigh,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.5,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+  },
   pageTitle: { fontWeight: '900', letterSpacing: -1, marginBottom: 24, marginTop: 24 },
   calendarModule: {
     backgroundColor: Colors.surfaceContainerLow,
@@ -429,9 +464,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   workoutDay: {
-    borderWidth: 1,
-    borderColor: 'rgba(129, 236, 255, 0.4)',
-    backgroundColor: 'rgba(129, 236, 255, 0.1)',
+    backgroundColor: Colors.primary,
   },
   todayCell: {
     // backgroundColor: 'rgba(30, 37, 58, 0.3)',
@@ -441,8 +474,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primary + '30', // Semi-transparent primary
   },
   selectedContainer: {
-    backgroundColor: Colors.primary,
-    shadowColor: Colors.primary,
+    backgroundColor: Colors.tertiary,
+    shadowColor: Colors.tertiary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5,
     shadowRadius: 10,
@@ -452,7 +485,7 @@ const styles = StyleSheet.create({
     width: 4,
     height: 4,
     borderRadius: 2,
-    backgroundColor: Colors.primary,
+    backgroundColor: Colors.tertiary,
     position: 'absolute',
     bottom: -4,
   },
@@ -532,35 +565,32 @@ const styles = StyleSheet.create({
   },
   menuOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  menuSheet: {
+  menuCenterCard: {
+    width: width * 0.85,
+    borderRadius: 24,
     backgroundColor: Colors.surfaceContainerHigh,
-    borderTopLeftRadius: 28,
-    borderTopRightRadius: 28,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    paddingTop: 16,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: 'rgba(225, 228, 249, 0.1)',
   },
-  menuHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.outlineVariant,
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  menuTitle: {
-    marginBottom: 20,
-    opacity: 0.6,
-  },
-  menuItem: {
+  menuCenterHeader: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+  },
+  menuCenterItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
     gap: 16,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(225,228,249,0.05)',
   },
 });

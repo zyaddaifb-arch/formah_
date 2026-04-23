@@ -47,11 +47,11 @@ export default function ProfileScreen() {
       
       if (status !== 'granted') {
         Alert.alert(
-          'Permission Required',
-          'We need access to your photos to change your profile picture.',
+          "Permission Required",
+          "We need your permission to access your photos to change your profile picture.",
           [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Settings', onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings() }
+            { text: "Cancel", style: 'cancel' },
+            { text: "Settings", onPress: () => Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings() }
           ]
         );
         return;
@@ -69,7 +69,7 @@ export default function ProfileScreen() {
       }
     } catch (e) {
       console.error('Photo Picker Error:', e);
-      Alert.alert('Error', 'An unexpected error occurred while opening the photo library.');
+      Alert.alert("Error", "An unexpected error occurred.");
     }
   };
 
@@ -110,14 +110,14 @@ export default function ProfileScreen() {
     try {
       await WebBrowser.openBrowserAsync(url);
     } catch (error) {
-      Alert.alert("Error", "Could not open the link.");
+      Alert.alert("Error", "An unexpected error occurred.");
     }
   };
 
   const handleDeleteAccount = () => {
     Alert.alert(
       "Delete Account",
-      "Are you sure? This will permanently delete all your workout history and profile data. This action cannot be undone.",
+      "Are you sure you want to delete your account? This action is permanent and cannot be undone.",
       [
         { text: "Cancel", style: "cancel" },
         { 
@@ -129,14 +129,14 @@ export default function ProfileScreen() {
                 // Delete data from profiles table
                 const { error } = await supabase.from('profiles').delete().eq('id', user.id);
                 if (error) {
-                   Alert.alert("Error", "Could not delete data. Please try again later.");
+                   Alert.alert("Error", "An unexpected error occurred.");
                    return;
                 }
                 // Clear local storage with hard wipe first so routing sends us to onboarding
                 useWorkoutStore.getState().reset(true);
                 // Then sign out
                 await signOut();
-                Alert.alert("Account Deleted", "Your data has been scheduled for deletion.");
+                Alert.alert("Account Deleted", "Your account and all associated data have been deleted.");
              }
           } 
         }
@@ -214,11 +214,6 @@ export default function ProfileScreen() {
         </View>
 
         <View style={styles.settingsSection}>
-          <SettingGroup title="ACCOUNT DETAILS">
-            <SettingItem icon="account-outline" label="Personal Information" />
-            <SettingItem icon="email-outline" label="Email & Security" />
-          </SettingGroup>
-
           <SettingGroup title="PREFERENCES">
             <View style={styles.settingItemRow}>
               <View style={styles.settingItemLeft}>
@@ -240,22 +235,20 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
             </View>
-
+ 
             <SettingToggle 
               icon="timer-outline" 
               label="Automatic Rest Timer" 
               value={user.isRestTimerEnabled} 
               onValueChange={(val) => updateUser({ isRestTimerEnabled: val })} 
             />
-
+ 
             <SettingItem 
               icon="clock-edit-outline" 
               label="Default Rest Duration" 
               value={formatDuration(user.defaultRestTimer)}
               onPress={() => setIsTimerMenuVisible(true)} 
             />
-
-            <SettingItem icon="bell-outline" label="Notifications" />
           </SettingGroup>
 
           <SettingGroup title="SUPPORT & LEGAL">

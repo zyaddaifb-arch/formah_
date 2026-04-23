@@ -18,8 +18,8 @@ const METRICS: { type: FocusMetricType; label: string }[] = [
   { type: 'total_volume', label: 'Total Volume' },
   { type: 'volume_increase', label: 'Volume Increase' },
   { type: 'total_reps', label: 'Total Reps' },
-  { type: 'weight_rep', label: 'Weight/Rep' },
-  { type: 'estimated_1rm', label: 'Est. 1RM' },
+  { type: 'weight_rep', label: 'Best Set (Weight × Reps)' },
+  { type: 'estimated_1rm', label: 'Estimated 1RM' },
 ];
 
 export const FocusMetricModal: React.FC<FocusMetricModalProps> = ({
@@ -34,8 +34,8 @@ export const FocusMetricModal: React.FC<FocusMetricModalProps> = ({
   const handleInfoPress = () => {
     Alert.alert(
       "Exercise Analytics",
-      "These metrics are calculated automatically based on the valid sets completed in this exercise.\n\nWarm-up sets and sets without weight/reps are excluded.",
-      [{ text: "Thanks!", style: "default" }]
+      "Analysis metrics for this exercise based on today's session versus your personal record.",
+      [{ text: "Thanks", style: "default" }]
     );
   };
 

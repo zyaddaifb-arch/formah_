@@ -133,7 +133,9 @@ export default function ArchivedTemplatesScreen() {
             <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{getLastPerformedText(item.id)}</ThemedText>
             <View style={styles.metaDivider} />
             <MaterialCommunityIcons name="format-list-bulleted" size={14} color={Colors.onSurfaceVariant} />
-            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{item.exercises?.length || 0} Ex.</ThemedText>
+            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>
+              {item.exercises?.length || 0} Ex.
+            </ThemedText>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.onSurfaceVariant} />
         </View>

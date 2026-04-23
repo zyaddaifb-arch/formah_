@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useWorkoutStore } from '@/store/workoutStore';
+import { soundService } from '@/services/SoundService';
 
 /**
  * PERF: Returns restTimer remaining seconds computed from `restTimerEndTimestamp`.
@@ -11,6 +12,7 @@ export const useRestTimer = () => {
   const restTimerEndTimestamp = useWorkoutStore(state => state.activeWorkout?.restTimerEndTimestamp);
   const restTimerTarget = useWorkoutStore(state => state.activeWorkout?.restTimerTarget ?? 60);
   const stopRestTimer = useWorkoutStore(state => state.stopRestTimer);
+  const [justFinished, setJustFinished] = useState(false);
 
   const computeRemaining = () => {
     if (!isRestTimerActive || !restTimerEndTimestamp) return 0;
@@ -27,13 +29,19 @@ export const useRestTimer = () => {
 
     // Sync immediately
     setRemaining(computeRemaining());
+    setJustFinished(false);
 
     const interval = setInterval(() => {
       const r = computeRemaining();
       setRemaining(r);
       if (r <= 0) {
         clearInterval(interval);
+        soundService.playDoneSet(); // Play the same "Done" sound as requested
+        setJustFinished(true);
         stopRestTimer();
+        
+        // Reset the "justFinished" flag after a short delay
+        setTimeout(() => setJustFinished(false), 2000);
       }
     }, 1000);
 
@@ -41,5 +49,5 @@ export const useRestTimer = () => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRestTimerActive, restTimerEndTimestamp]);
 
-  return { remaining, target: restTimerTarget, isActive: isRestTimerActive };
+  return { remaining, target: restTimerTarget, isActive: isRestTimerActive, justFinished };
 };

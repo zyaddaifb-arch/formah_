@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -51,7 +51,7 @@ export default function EditSessionScreen() {
     session.exercises.forEach(ex => {
       ex.sets.forEach(s => {
         if (s.done && !s.isWarmUp) {
-          totalVolume += (s.weight * s.reps);
+          totalVolume += (s.weight || 0) * (s.reps || 0);
         }
       });
     });
@@ -62,16 +62,16 @@ export default function EditSessionScreen() {
     });
     
     router.back();
-    Alert.alert('Success', 'Workout session updated.');
+    Alert.alert("Success", "Workout session updated successfully.");
   };
 
   const handleCancel = () => {
     Alert.alert(
-      'Discard Changes',
-      'Are you sure you want to discard your edits?',
+      "Discard Changes?",
+      "Are you sure you want to discard your changes?",
       [
-        { text: 'Keep Editing', style: 'cancel' },
-        { text: 'Discard', style: 'destructive', onPress: () => router.back() }
+        { text: "Keep Editing", style: 'cancel' },
+        { text: "Discard", style: 'destructive', onPress: () => router.back() }
       ]
     );
   };

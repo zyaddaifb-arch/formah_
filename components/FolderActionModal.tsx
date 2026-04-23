@@ -96,8 +96,6 @@ export const FolderActionModal: React.FC<FolderActionModalProps> = ({
           <View style={styles.overlay}>
             <TouchableWithoutFeedback onPress={() => {}}>
               <View style={[styles.container, deleteFlow === 'move' && { maxHeight: '80%' }]}>
-                <BlurView intensity={90} tint="dark" style={StyleSheet.absoluteFill} />
-                
                 {isRenaming ? (
                   <View style={styles.content}>
                     <View style={styles.header}>
@@ -137,7 +135,6 @@ export const FolderActionModal: React.FC<FolderActionModalProps> = ({
                     <ThemedText type="body" size={14} color={Colors.onSurfaceVariant} style={{ marginBottom: 16 }}>
                       This folder contains {templatesInFolder.length} template(s). What would you like to do?
                     </ThemedText>
-
                     <View style={styles.optionsList}>
                       <ActionRow icon="folder-move-outline" label="Move Templates" onPress={() => setDeleteFlow('move')} />
                       <ActionRow icon="trash-can-outline" label="Delete Folder & Templates" onPress={handleDeleteWithTemplates} color={Colors.error} />
@@ -151,7 +148,6 @@ export const FolderActionModal: React.FC<FolderActionModalProps> = ({
                         <MaterialCommunityIcons name="arrow-left" size={24} color={Colors.onSurface} />
                       </TouchableOpacity>
                     </View>
-
                     <ScrollView style={styles.folderList} showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
                       <ActionRow 
                         icon="folder-outline" 
@@ -176,14 +172,12 @@ export const FolderActionModal: React.FC<FolderActionModalProps> = ({
                         <MaterialCommunityIcons name="close" size={24} color={Colors.onSurface} />
                       </TouchableOpacity>
                     </View>
-
                     <View style={styles.optionsList}>
                       <ActionRow icon="form-textbox" label="Rename Folder" onPress={() => setIsRenaming(true)} />
                       <ActionRow icon="trash-can-outline" label="Delete Folder" onPress={handleInitialDelete} color={Colors.error} />
                     </View>
                   </View>
                 )}
-                
               </View>
             </TouchableWithoutFeedback>
           </View>
@@ -211,6 +205,7 @@ const styles = StyleSheet.create({
   container: {
     width: width * 0.85,
     borderRadius: 24,
+    backgroundColor: Colors.surfaceContainerHigh,
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: 'rgba(225, 228, 249, 0.1)',

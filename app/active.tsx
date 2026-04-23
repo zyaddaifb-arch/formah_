@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
 // Constants & UI Primitives
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { GridBackground, BlurGlow } from '@/components/VisualAccents';
@@ -61,7 +62,7 @@ export default function ActiveWorkoutScreen() {
   const { lineTimers, startLineTimer, cancelLineTimer, adjustLineTimer, skipLineTimer } = useLineTimers();
   const { handleFinish, handleCancel } = useWorkoutActions();
   // PERF: useRestTimer handles the 1s interval locally — does NOT write to the store every second.
-  const { remaining: restTimerRemaining, target: restTimerTarget, isActive: isRestTimerActive } = useRestTimer();
+  const { remaining: restTimerRemaining, target: restTimerTarget, isActive: isRestTimerActive, justFinished } = useRestTimer();
 
   // Local UI State
   const [restTimerVisible, setRestTimerVisible] = useState(false);
@@ -190,6 +191,20 @@ export default function ActiveWorkoutScreen() {
           setRenameModalVisible(false);
         }}
       />
+
+      {/* Rest Finished Popup */}
+      {justFinished && (
+        <View style={styles.restFinishedOverlay} pointerEvents="none">
+           <Animated.View 
+             entering={FadeIn.duration(300)} 
+             exiting={FadeOut.duration(300)}
+             style={styles.restFinishedPopup}
+           >
+              <MaterialCommunityIcons name="timer-check" size={48} color={Colors.primary} />
+              <ThemedText type="headline" size={24} color={Colors.primary}>Go!</ThemedText>
+           </Animated.View>
+        </View>
+      )}
     </GestureHandlerRootView>
   );
 }
@@ -276,5 +291,26 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(129, 236, 245, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  restFinishedOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+    backgroundColor: 'rgba(9, 14, 28, 0.4)',
+  },
+  restFinishedPopup: {
+    backgroundColor: Colors.surfaceContainerHighest,
+    padding: 32,
+    borderRadius: 32,
+    alignItems: 'center',
+    gap: 16,
+    borderWidth: 1,
+    borderColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 10,
   },
 });

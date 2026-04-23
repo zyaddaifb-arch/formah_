@@ -19,11 +19,16 @@ import { LibraryExercise } from '../../store/types';
 import { Image } from 'expo-image';
 import exerciseMapping from '@/constants/exerciseMapping.json';
 
+import { useWorkoutStore } from '../../store/workoutStore';
 
 export default function ExercisesScreen() {
   const insets = useSafeAreaInsets();
+  const { user, addCustomExercise } = useWorkoutStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [library, setLibrary] = useState<LibraryExercise[]>(EXERCISE_LIBRARY);
+  
+  const library = useMemo(() => {
+    return [...EXERCISE_LIBRARY, ...(user.customExercises || [])];
+  }, [user.customExercises]);
 
   const [filterBodyPart, setFilterBodyPart] = useState('All');
   const [filterCategory, setFilterCategory] = useState('All');
@@ -61,7 +66,7 @@ export default function ExercisesScreen() {
       frequency: 0,
       lastPerformed: ''
     };
-    setLibrary(prev => [...prev, custom]);
+    addCustomExercise(custom);
     setCreateModalVisible(false);
     setCustomName('');
     setSelectedDetailName(custom.name);
@@ -113,8 +118,9 @@ export default function ExercisesScreen() {
         <SafeAreaView style={styles.safeArea}>
           <View style={[styles.headerRow, { paddingTop: Math.max(insets.top, 16) }]}>
             <ThemedText type="headline" size={24} color={Colors.primary}>Exercise Library</ThemedText>
-            <TouchableOpacity onPress={handleNewExercise}>
-              <ThemedText type="headline" size={16} color={Colors.primary}>Create Custom</ThemedText>
+            <TouchableOpacity onPress={handleNewExercise} style={{ alignItems: 'flex-end' }}>
+              <ThemedText type="headline" size={16} color={Colors.primary}>Create</ThemedText>
+              <ThemedText type="headline" size={16} color={Colors.primary}>Custom</ThemedText>
             </TouchableOpacity>
           </View>
 
@@ -122,7 +128,7 @@ export default function ExercisesScreen() {
             <MaterialCommunityIcons name="magnify" size={20} color={Colors.onSurfaceVariant} style={styles.searchIcon} />
             <TextInput 
               style={styles.searchInput}
-              placeholder="Search Exercises"
+              placeholder="Search exercise..."
               placeholderTextColor={Colors.onSurfaceVariant}
               value={searchQuery}
               onChangeText={setSearchQuery}
@@ -214,7 +220,7 @@ export default function ExercisesScreen() {
             <View style={styles.pickerContent}>
               <View style={styles.pickerHeader}>
                 <ThemedText type="headline" size={20}>
-                  Select {filterModalConfig.type === 'bodyPart' ? 'Body Part' : filterModalConfig.type === 'category' ? 'Category' : 'Sort By'}
+                  {filterModalConfig.type === 'bodyPart' ? 'Select Body Part' : filterModalConfig.type === 'category' ? 'Select Category' : 'Sort By'}
                 </ThemedText>
                 <TouchableOpacity onPress={() => setFilterModalConfig({ ...filterModalConfig, visible: false })}>
                   <MaterialCommunityIcons name="close" size={24} color={Colors.onSurface} />
@@ -257,7 +263,7 @@ export default function ExercisesScreen() {
                 <ThemedText type="headline" size={16} style={{ marginBottom: 12 }}>Name</ThemedText>
                 <TextInput
                   style={styles.createInput}
-                  placeholder="Add Name"
+                  placeholder="Add Name..."
                   placeholderTextColor={Colors.onSurfaceVariant}
                   value={customName}
                   onChangeText={setCustomName}

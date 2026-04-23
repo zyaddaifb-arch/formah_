@@ -4,16 +4,20 @@ import {
   StyleSheet, 
   ScrollView, 
   TouchableOpacity, 
-  Dimensions
+  Dimensions,
+  Modal,
+  Alert
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import { ThemedText } from '@/components/ThemedText';
 import { GridBackground, BlurGlow } from '@/components/VisualAccents';
+import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useWorkoutStore } from '@/store/workoutStore';
 import { calculateStreakData } from '@/utils/streak';
+import { generateUUID } from '@/utils/uuid';
 
 const { width } = Dimensions.get('window');
 
@@ -21,6 +25,7 @@ export default function SummaryScreen() {
   const router = useRouter();
   const { sessionId } = useLocalSearchParams<{ sessionId: string }>();
   const history = useWorkoutStore(state => state.history);
+  const [saveModalVisible, setSaveModalVisible] = React.useState(false);
   
   const session = useMemo(() => {
     return history.find(s => s.id === sessionId);
@@ -52,6 +57,8 @@ export default function SummaryScreen() {
   const durationStr = hours > 0 
     ? `${hours}h ${minutes}m` 
     : `${minutes}m ${seconds}s`;
+ 
+  const weightUnit = useWorkoutStore.getState().user.weightUnit;
 
   const totalSets = session.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.done).length, 0);
 
@@ -77,25 +84,25 @@ export default function SummaryScreen() {
           <View style={styles.statsGrid}>
             <StatCard 
               icon="timer-outline" 
-              label="DURATION" 
+              label="Duration" 
               value={durationStr} 
               color={Colors.primary} 
             />
             <StatCard 
               icon="weight-lifter" 
-              label="VOLUME" 
-              value={`${session.totalVolume} ${useWorkoutStore.getState().user.weightUnit}`} 
+              label="Volume" 
+              value={`${session.totalVolume} ${weightUnit}`} 
               color={Colors.secondary} 
             />
             <StatCard 
               icon="format-list-bulleted" 
-              label="TOTAL SETS" 
+              label="Sets" 
               value={totalSets.toString()} 
               color={Colors.tertiary} 
             />
             <StatCard 
               icon="arm-flex-outline" 
-              label="EXERCISES" 
+              label="Exercises" 
               value={session.exercises.length.toString()} 
               color="#FFD166" 
             />
@@ -138,7 +145,7 @@ export default function SummaryScreen() {
                        <View key={s.id} style={styles.setLogRow}>
                          <ThemedText type="body" size={13} color={Colors.onSurfaceVariant} style={{ width: 24 }}>W{i + 1}</ThemedText>
                          <ThemedText type="headline" size={13} color={Colors.onSurfaceVariant}>
-                           {(s.weight ?? 0) > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
+                           {(s.weight ?? 0) > 0 ? `${s.weight} ${ex.weightUnit ?? weightUnit}` : 'BW'} × {s.reps}
                          </ThemedText>
                        </View>
                      ))}
@@ -149,7 +156,7 @@ export default function SummaryScreen() {
                        <View key={s.id} style={styles.setLogRow}>
                          <ThemedText type="body" size={13} color={Colors.onSurfaceVariant} style={{ width: 24 }}>{i + 1}</ThemedText>
                          <ThemedText type="headline" size={13} color={Colors.onSurface}>
-                           {(s.weight ?? 0) > 0 ? `${s.weight} ${ex.weightUnit ?? 'kg'}` : 'BW'} × {s.reps}
+                           {(s.weight ?? 0) > 0 ? `${s.weight} ${ex.weightUnit ?? weightUnit}` : 'BW'} × {s.reps}
                          </ThemedText>
                        </View>
                      ))}
@@ -162,9 +169,71 @@ export default function SummaryScreen() {
              })}
           </View>
 
-          <TouchableOpacity style={styles.doneBtn} onPress={() => router.replace('/home')}>
+          <TouchableOpacity 
+            style={styles.doneBtn} 
+            onPress={() => setSaveModalVisible(true)}
+          >
              <ThemedText type="headline" size={18} color={Colors.onPrimary}>Back to Dashboard</ThemedText>
           </TouchableOpacity>
+
+          <Modal
+            visible={saveModalVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setSaveModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <Animated.View 
+                entering={FadeIn.duration(300)}
+                style={styles.modalContent}
+              >
+                <BlurGlow position="topRight" color={Colors.primary} />
+                
+                <View style={styles.modalIconContainer}>
+                  <MaterialCommunityIcons name="content-save-check-outline" size={40} color={Colors.primary} />
+                </View>
+
+                <ThemedText type="headline" size={24} style={styles.modalTitle}>Save as Template?</ThemedText>
+                <ThemedText type="body" size={16} color={Colors.onSurfaceVariant} style={styles.modalSubtitle}>
+                  Would you like to save this workout as a template for future use?
+                </ThemedText>
+
+                <View style={styles.modalActions}>
+                  <TouchableOpacity 
+                    style={[styles.modalBtn, styles.modalBtnSecondary]} 
+                    onPress={() => {
+                      setSaveModalVisible(false);
+                      router.replace('/home');
+                    }}
+                  >
+                    <ThemedText type="headline" size={16} color={Colors.onSurfaceVariant}>No, just finish</ThemedText>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity 
+                    style={[styles.modalBtn, styles.modalBtnPrimary]} 
+                    onPress={() => {
+                      if (session) {
+                        useWorkoutStore.getState().addTemplate({
+                          id: generateUUID(),
+                          title: session.title,
+                          type: 'New',
+                          timeEstimate: `${Math.round((session.endTime - session.startTime) / 60000)}m`,
+                          exercises: session.exercises,
+                          color: '#81ECFF',
+                          icon: 'clipboard-text-outline',
+                          isPreset: false,
+                        });
+                      }
+                      setSaveModalVisible(false);
+                      router.replace('/home');
+                    }}
+                  >
+                    <ThemedText type="headline" size={16} color={Colors.onPrimary}>Save Template</ThemedText>
+                  </TouchableOpacity>
+                </View>
+              </Animated.View>
+            </View>
+          </Modal>
 
         </ScrollView>
       </SafeAreaView>
@@ -267,5 +336,62 @@ const styles = StyleSheet.create({
     shadowRadius: 15,
     shadowOpacity: 0.3,
     marginTop: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(9, 14, 28, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    backgroundColor: Colors.surfaceContainerHigh,
+    borderRadius: 32,
+    padding: 32,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    overflow: 'hidden',
+  },
+  modalIconContainer: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: Colors.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  modalTitle: {
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  modalSubtitle: {
+    textAlign: 'center',
+    marginBottom: 32,
+    lineHeight: 22,
+  },
+  modalActions: {
+    width: '100%',
+    gap: 12,
+  },
+  modalBtn: {
+    height: 60,
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalBtnPrimary: {
+    backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
+    shadowRadius: 10,
+    shadowOpacity: 0.3,
+  },
+  modalBtnSecondary: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   }
 });

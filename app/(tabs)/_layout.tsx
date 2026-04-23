@@ -54,7 +54,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
           }
 
           const iconName = route.name === 'history' ? 'history' : 'format-list-bulleted-type';
-          const label = route.name === 'history' ? 'History' : 'Library';
+          const label = route.name === 'history' ? 'HISTORY' : 'EXERCISES';
 
           return (
             <TouchableOpacity
@@ -73,7 +73,7 @@ function CustomTabBar({ state, descriptors, navigation }: any) {
                 color={isFocused ? Colors.primary : 'rgba(225, 228, 249, 0.4)'}
                 style={styles.tabLabel}
               >
-                {label.toUpperCase()}
+                {label}
               </ThemedText>
             </TouchableOpacity>
           );

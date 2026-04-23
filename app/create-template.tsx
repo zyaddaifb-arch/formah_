@@ -44,7 +44,7 @@ export default function CreateTemplateScreen() {
     if (draftTemplate && (draftTemplate.exercises.length > 0)) {
       Alert.alert(
         "Discard Changes?",
-        "You have unsaved changes. Are you sure you want to go back?",
+        "Are you sure you want to discard your changes?",
         [
           { text: "Keep Editing", style: "cancel" },
           { 
@@ -74,7 +74,7 @@ export default function CreateTemplateScreen() {
     }
     saveDraftTemplate();
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert("Success", "Template saved successfully!");
+    Alert.alert("Success", "Template saved successfully.");
     router.back();
   };
 
@@ -91,7 +91,9 @@ export default function CreateTemplateScreen() {
             </TouchableOpacity>
             
             <View style={styles.headerCenter}>
-                <ThemedText type="headline" size={18}>{templateId ? 'Edit Template' : 'New Template'}</ThemedText>
+                <ThemedText type="headline" size={18}>
+                  {templateId ? 'Edit Template' : 'New Template'}
+                </ThemedText>
             </View>
 
             <TouchableOpacity onPress={handleSave} style={[styles.headerBtn, styles.saveBtn]}>

@@ -45,10 +45,10 @@ export const useWorkoutActions = () => {
     if (!hasCheckedSets && !hasValidUncheckedSets) {
       Alert.alert(
         'Cancel Workout?',
-        'Are you sure you want to cancel? Progress will be lost.',
+        'You haven\'t logged any sets. Do you want to discard this workout?',
         [
           { text: 'Resume', style: 'cancel' },
-          { text: 'Cancel Workout', style: 'destructive', onPress: () => { cancelWorkout(); router.back(); } }
+          { text: 'Discard', style: 'destructive', onPress: () => { cancelWorkout(); router.back(); } }
         ]
       );
       return;
@@ -56,12 +56,12 @@ export const useWorkoutActions = () => {
 
     if (hasValidUncheckedSets) {
       Alert.alert(
-        'Unfinished Sets',
-        'Some sets have weight and reps but are not marked done.\nWhat would you like to do?',
+        'Empty Sets',
+        'You have sets that aren\'t marked as done. What would you like to do?',
         [
           { text: 'Resume', style: 'cancel' },
-          { text: 'Finish Anyway', onPress: () => doFinish(false) },
-          { text: 'Mark All Done & Finish', onPress: () => doFinish(true) }
+          { text: 'Finish anyway', onPress: () => doFinish(false) },
+          { text: 'Mark all done & Finish', onPress: () => doFinish(true) }
         ]
       );
       return;
@@ -69,7 +69,7 @@ export const useWorkoutActions = () => {
 
     Alert.alert(
       'Finish Workout',
-      'Are you sure you want to finish?',
+      'Are you sure you want to finish this workout?',
       [
         { text: 'Resume', style: 'cancel' },
         { text: 'Finish', onPress: () => doFinish() }
@@ -79,10 +79,10 @@ export const useWorkoutActions = () => {
 
   const handleCancel = () => {
     Alert.alert(
-      'Cancel Workout',
-      'Are you sure you want to discard this session?',
+      'Discard Workout',
+      'Are you sure you want to discard this workout? All progress will be lost.',
       [
-        { text: 'No', style: 'cancel' },
+        { text: 'Cancel', style: 'cancel' },
         { text: 'Discard', style: 'destructive', onPress: () => { cancelWorkout(); router.back(); } }
       ]
     );
@@ -91,8 +91,8 @@ export const useWorkoutActions = () => {
   const startNewWorkout = (templateId?: string) => {
     if (activeWorkout) {
       Alert.alert(
-        'Workout In Progress',
-        'You already have an active session running. What would you like to do?',
+        'Workout in Progress',
+        'You already have an active workout. Would you like to resume it, discard it, or finish it first?',
         [
           { text: 'Cancel', style: 'cancel' },
           { text: 'Resume Current', onPress: () => router.push('/active') },
@@ -127,3 +127,4 @@ export const useWorkoutActions = () => {
     startNewWorkout
   };
 };
+

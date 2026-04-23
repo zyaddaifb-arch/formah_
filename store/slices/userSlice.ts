@@ -6,6 +6,7 @@ export interface UserSlice {
   updateUser: (data: Partial<UserData>, shouldSync?: boolean) => void;
   setWeightUnit: (unit: 'kg' | 'lb') => void;
   completeOnboarding: () => void;
+  addCustomExercise: (exercise: any) => void; // Using any here to avoid cyclic type imports, typed in store/types.ts
 }
 
 export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (set) => ({
@@ -79,6 +80,14 @@ export const createUserSlice: StateCreator<WorkoutStore, [], [], UserSlice> = (s
         has_seen_onboarding: true,
       });
       return { user: { ...state.user, hasSeenOnboarding: true } };
+    });
+  },
+  addCustomExercise: (exercise) => {
+    set((state) => {
+      const customExercises = state.user.customExercises || [];
+      return {
+        user: { ...state.user, customExercises: [...customExercises, exercise] }
+      };
     });
   },
 });

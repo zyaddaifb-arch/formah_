@@ -15,12 +15,6 @@ import { ThemedText } from '../components/ThemedText';
 import { GridBackground, BlurGlow } from '../components/VisualAccents';
 import { useWorkoutStore } from '../store/workoutStore';
 import { useWorkoutActions } from '../hooks/workout/useWorkoutActions';
-import { PRESET_TEMPLATES } from '../store/presets';
-import { TemplateSummaryModal } from '../components/TemplateSummaryModal';
-import { TemplateActionModal } from '../components/TemplateActionModal';
-
-const { width } = Dimensions.get('window');
-
 export default function AllTemplatesScreen() {
   const router = useRouter();
   const { startNewWorkout } = useWorkoutActions();
@@ -65,7 +59,7 @@ export default function AllTemplatesScreen() {
   };
 
   const getExercisePreview = (exercises: any[]) => {
-    if (!exercises || exercises.length === 0) return 'No exercises';
+    if (!exercises || exercises.length === 0) return 'No exercises found';
     const names = exercises.map(ex => ex.name);
     if (names.length <= 3) return names.join(', ');
     return names.slice(0, 3).join(', ') + '...';
@@ -134,7 +128,9 @@ export default function AllTemplatesScreen() {
             <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{getLastPerformedText(item.id)}</ThemedText>
             <View style={styles.metaDivider} />
             <MaterialCommunityIcons name="format-list-bulleted" size={14} color={Colors.onSurfaceVariant} />
-            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>{item.exercises?.length || 0} Ex.</ThemedText>
+            <ThemedText type="body" size={12} color={Colors.onSurfaceVariant}>
+              {item.exercises?.length || 0} Ex.
+            </ThemedText>
           </View>
           <MaterialCommunityIcons name="chevron-right" size={20} color={Colors.onSurfaceVariant} />
         </View>
